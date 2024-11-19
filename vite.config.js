@@ -1,8 +1,8 @@
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-import cesium from "vite-plugin-cesium";
-import commonjs from "@rollup/plugin-commonjs";
-import requireTransform from "vite-plugin-require-transform";
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import cesium from 'vite-plugin-cesium';
+import commonjs from '@rollup/plugin-commonjs';
+import requireTransform from 'vite-plugin-require-transform';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -13,6 +13,11 @@ export default defineConfig({
       fileRegex: /.js$|.vue$|.png$|.ts$|.jpg$/,
     }),
   ],
+  resolve: {
+    alias: {
+      '@': 'src',
+    },
+  },
   css: {
     preprocessorOptions: {
       less: {
@@ -22,6 +27,17 @@ export default defineConfig({
           // )}";`,
         },
         javascriptEnabled: true,
+      },
+    },
+  },
+  server: {
+    port: 3000,
+    open: false,
+    proxy: {
+      '/api': {
+        target: 'https://api.example.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },
