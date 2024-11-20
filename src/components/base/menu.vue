@@ -107,6 +107,8 @@ const handleMenuClick = (path) => {
     height: 100%;
     width: 100%;
     padding: 0;
+    background-color: #494949b8;
+    border: none;
     .el-menu-item {
       width: 2rem;
       height: 2rem;

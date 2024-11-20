@@ -18,5 +18,6 @@ import { BaseSettings } from '../../common';
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background-color: #3b3a3a;
 }
 </style>

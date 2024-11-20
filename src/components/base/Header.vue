@@ -18,6 +18,7 @@
   height: 100%;
   padding: 2px 5px;
   display: flex;
+  background-color: #3b3a3a;
   .header-logo {
     height: 100%;
     display: flex;
@@ -37,7 +38,7 @@
       margin-left: 8px;
       user-select: none;
       font-weight: 400;
-      color: #4b4b4b;
+      color: #cecece;
     }
   }
   .header-tools {

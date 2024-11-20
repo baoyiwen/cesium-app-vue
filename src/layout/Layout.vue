@@ -68,29 +68,25 @@ watch(
   .header {
     width: 100%;
     height: 2rem;
-    background-color: rgb(101, 174, 238);
   }
 
   .content {
     width: 100%;
     flex: 1;
     display: flex;
-    background-color: aqua;
+    background-color: #494949b8;
     .menu-layout {
       width: 2rem;
       height: 100%;
-      background-color: bisque;
     }
     .content-layout {
       flex: 1;
       height: 100%;
-      background-color: aquamarine;
     }
   }
   .footer {
     width: 100%;
     height: 2rem;
-    background-color: rgb(70, 118, 207);
   }
 }
 </style>
