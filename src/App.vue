@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-    <router-view />
+    <Layout />
+    <Loading />
     <!-- 用于渲染路由页面 -->
     <el-dialog
       v-if="userStore.isSessionExpired"
@@ -15,12 +16,22 @@
   </div>
 </template>
 <script setup>
+import { onMounted } from 'vue';
 import { useUserStore } from './store/userStore';
+import Loading from './views/Loading.vue';
+import Layout from './layout/Layout.vue';
+import { useMenuStore } from './store/menuStore';
+const menuStore = useMenuStore();
 const userStore = useUserStore();
 const logout = () => {
   userStore.logout();
   location.reload(); // 刷新页面，回到首页或登录页
 };
+
+onMounted(() => {
+  menuStore.generateMenus();
+  menuStore.setDefaultActiveMenu();
+});
 </script>
 <style scoped>
 html,

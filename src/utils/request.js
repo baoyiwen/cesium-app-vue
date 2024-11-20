@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '../store/userStore';
+import { useLoadingStore } from '../store/loadingStore';
 import { refreshToken } from '../api/user';
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -17,7 +18,9 @@ let requestsQueue = []; // 等待队列
 // 请求拦截器
 service.interceptors.request.use(
   (config) => {
-    // 在发送这个请求前可以处理，例如添加token
+    const loadingStore = useLoadingStore();
+    loadingStore.startLoading('正在加载数据...'); // 开始加载
+    // 在发送这个请求前可以处理，例如添加tokenconst loadingStore = useLoadingStore();
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -26,6 +29,8 @@ service.interceptors.request.use(
     return config;
   },
   (error) => {
+    const loadingStore = useLoadingStore();
+    loadingStore.stopLoading(); // 请求错误时停止加载
     // 请求错误处理
     return Promise.reject(error);
   }
@@ -75,7 +80,11 @@ service.interceptors.request.use(
 // );
 
 service.interceptors.response.use(
-  (response) => response.data, // 成功直接返回数据
+  (response) => {
+    const loadingStore = useLoadingStore();
+    loadingStore.stopLoading(); // 响应成功时停止加载
+    return response.data;
+  }, // 成功直接返回数据
   async (error) => {
     const userStore = useUserStore();
 
@@ -94,6 +103,8 @@ service.interceptors.response.use(
 
     // 处理其他错误
     ElMessage.error(error.response?.data?.message || '请求失败，请稍后重试');
+    const loadingStore = useLoadingStore();
+    loadingStore.stopLoading(); // 响应失败时停止加载
     return Promise.reject(error);
   }
 );

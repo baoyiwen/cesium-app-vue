@@ -1,0 +1,22 @@
+{
+  "errors": {
+    "404": {
+      "title": "404",
+      "message": "Oops! The page you're looking for doesn't exist.",
+      "back": "Go back to Home"
+    },
+    "403": {
+      "title": "403",
+      "message": "Sorry, you don't have permission to access this page.",
+      "back": "Return to Home"
+    },
+    "500": {
+      "title": "500",
+      "message": "Something went wrong on our end. Please try again later.",
+      "back": "Go back to Home"
+    }
+  },
+  "loading": {
+    "message": "Loading..."
+  }
+}

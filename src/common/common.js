@@ -81,3 +81,8 @@ export const checkPolygons = (geojson) => {
   });
   return errors;
 };
+
+export const BaseSettings = {
+  title: '数字城市演示项目',
+  projectCopyright: 'My Three.js Library ©2024'
+}
