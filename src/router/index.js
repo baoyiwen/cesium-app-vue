@@ -5,11 +5,11 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/Home.vue'),
+    component: () => import('../page/index.vue'),
     meta: {
       title: 'Home',
       icon: '/images/menus/map-draw.svg',
-      activeIcon: '/images/menus/map-draw-active.svg',
+      activeIcon: '/images/menus/map-draw-night.svg',
       showInMenu: true,
       isDefault: true,
     },

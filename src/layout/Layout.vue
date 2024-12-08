@@ -72,6 +72,7 @@ watch(
 
   .content {
     width: 100%;
+    height: calc(100% - 4rem);
     flex: 1;
     display: flex;
     background-color: #494949b8;
