@@ -1,359 +1,375 @@
 <template>
-  <div class="cesium-component-root" id="cesiumComponentRoot"></div>
+  <div class="cesium-container" ref="cesiumContainer"></div>
+  <!-- 加载进度条 -->
+  <div v-if="loading" class="loading-overlay">
+    Loading... {{ loadingProgress }}%
+  </div>
+  <!-- 性能瓶颈警告 -->
+  <div v-if="performanceWarning" class="performance-overlay">
+    <p>Performance Warning: {{ performanceWarning }}</p>
+  </div>
+  <!-- 性能日志图表 -->
+  <div class="performance-chart-container" v-show="showPerformanceChart">
+    <div class="performance-chart" ref="performanceChart"></div>
+  </div>
+  <!-- 自动化瓶颈分析报告 -->
+  <div class="bottleneck-report" v-if="bottleneckReport.length > 0">
+    <h3>Bottleneck Report</h3>
+    <ul>
+      <li v-for="(item, index) in bottleneckReport" :key="index">
+        <strong>{{ item.type }}</strong> at {{ item.timestamp }}:
+        {{ item.value }}
+      </li>
+    </ul>
+  </div>
 </template>
+
 <script setup>
-import {
-  Viewer,
-  ArcGisMapServerImageryProvider,
-  createWorldTerrainAsync,
-  Cartesian3,
-  Math,
-  Cesium3DTileset,
-  IonResource,
-  Ion,
-  Cesium3DTileStyle,
-  defined,
-  GeoJsonDataSource,
-  Color,
-  ClassificationType,
-  JulianDate,
-  BoundingSphere,
-  Ellipsoid,
-  HorizontalOrigin,
-  VerticalOrigin,
-  DistanceDisplayCondition,
-  ConstantProperty,
-  PolygonHierarchy,
-  KmlDataSource,
-  Cartographic,
-  CzmlDataSource,
-} from 'cesium';
-import { onMounted, onUnmounted } from 'vue';
-// import { checkPolygons, fixPolygons } from "./common";
+import * as Cesium from 'cesium';
+import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import * as echarts from 'echarts';
+import { watch } from 'less';
+
+const props = defineProps({
+  options: {
+    type: Object,
+    default: () => ({}), // Cesium Viewer 初始化选项
+  },
+  performanceThresholds: {
+    type: Object,
+    default: () => ({
+      maxDrawCalls: 1000, // 最大绘制调用数阈值
+      minFrameRate: 15, // 最小帧率阈值
+    }),
+  },
+  token: {
+    type: String,
+    default:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0N2YxOWQ0NC1mYTkyLTQzYTEtOWU0Ny1jOTQyOTE2ZDFlOTMiLCJpZCI6MjMyMTc3LCJpYXQiOjE3MjI4NDUxNzN9.UijwFTk4emxDLQHMXFaA2-36v3c1kKVV-EVs0OGO54o',
+  },
+});
+
+const emit = defineEmits([
+  'loaded',
+  'performanceLogged',
+  'bottleneckDetected',
+  'optimizationApplied',
+]);
+
+const cesiumContainer = ref(null); // Cesium 容器引用
+const performanceChart = ref(null); // 性能日志图表容器
+let viewer = null; // Cesium Viewer 实例
+let tileProgressListener = null; // 瓦片加载事件监听器引用
+let performanceLogInterval = null; // 性能日志记录定时器
+
+const state = reactive({
+  loading: true, // 是否正在加载
+  loadingProgress: 0, // 加载进度百分比
+  performanceLogs: [], // 性能日志记录
+  performanceWarning: null, // 性能瓶颈警告
+  showPerformanceChart: true, // 是否显示性能日志图表
+  bottleneckReport: [], // 自动化瓶颈分析报告
+  bottleneckPoints: [], // 用于标记图表上的瓶颈点
+});
+
+// **初始化 Cesium Viewer**
 const initCesium = async () => {
-  // const ctileset = await new Cesium3DTileset({
-  //   url: IonResource.fromAssetId(96188)
-  // })
-  Ion.defaultAccessToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0N2YxOWQ0NC1mYTkyLTQzYTEtOWU0Ny1jOTQyOTE2ZDFlOTMiLCJpZCI6MjMyMTc3LCJpYXQiOjE3MjI4NDUxNzN9.UijwFTk4emxDLQHMXFaA2-36v3c1kKVV-EVs0OGO54o`;
-  const custom = new ArcGisMapServerImageryProvider({
-    url: 'services.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer',
-  });
-  const terrainProvider = await createWorldTerrainAsync({
-    /**
-     * 标记，用于指示客户端是否应从服务器请求每片水面罩（如果有）。
-     */
-    requestWaterMask: true,
-    /**
-     * 指示客户端是否应从服务器请求其他照明信息（如果有）的标志。
-     */
-    requestVertexNormals: true,
-  });
-  const viewer = (window.viewer = new Viewer('cesiumComponentRoot', {
-    /**
-     * 是否开启地图底图选择器开关。
-     */
-    baseLayerPicker: false,
-    /**
-     * 前基础影像图层的视图模型（如果未提供）将使用第一个可用的基础图层。
-     * 仅当options.baseLayerPicker设置为true时，此值才有效。
-     */
-    // imageryProviderViewModels: custom,
-    ArcGisMapServerImageryProvider: custom,
-    /**
-     * 要使用的地形提供商
-     */
-    terrainProvider: terrainProvider,
-    // terrainProvider: await CesiumTerrainProvider.fromIonAssetId(1),
+  try {
+    state.loading = true;
 
-    infoBox: false,
-    geocoder: true, // 隐藏查找控件。
-    homeButton: false, // 隐藏视角返回初始位置按钮
-    sceneModePicker: false, // 隐藏视角模式3D, 2D, CV,
-    // baseLayerPicker: false, // 隐藏图层选择
-    navigationHelpButton: false, // 隐藏帮助按钮
-    animation: false, // 隐藏动画控件
-    timeline: false, // 隐藏时间轴
-  }));
-
-  viewer.scene.debugShowFramesPerSecond = true;
-  viewer.scene.globe.depthTestAgainstTerrain = true;
-
-  const tileset = await Cesium3DTileset.fromIonAssetId(96188);
-  const heightStyle = await new Cesium3DTileStyle({
-    color: {
-      conditions: [
-        [
-          '${height} === null || ${height} === undefined || Number(${height}) === 0',
-          'color("#BBDEFB", 1)',
-        ],
-        ['Number(${height}) >= 300.0', "color('#311B92', 1)"],
-        ['Number(${height}) >= 250.0', "color('#4527A0', 1)"],
-        ['Number(${height}) >= 200.0', "color('#512DA8', 1)"],
-        ['Number(${height}) >= 150.0', "color('#5E35B1', 1)"],
-        ['Number(${height}) >= 100.0', "color('#673AB7', 1)"],
-        ['Number(${height}) >= 50.0', "color('#7E57C2', 1)"],
-        ['Number(${height}) >= 25.0', "color('#9575CD', 1)"],
-        ['Number(${height}) >= 10.0', "color('#B39DDB', 1)"],
-        ['Number(${height}) >= 5.0', "color('#D1C4E9', 1)"],
-        ['true', "color('#EDE7F6', 1)"],
-      ],
-    },
-    meta: {
-      description: '"Building id ${id} has height ${height}."',
-    },
-  });
-  tileset.style = heightStyle;
-  const city = viewer.scene.primitives.add(tileset);
-  viewer.camera.setView({
-    destination: new Cartesian3(1332761, -4662399, 4137888),
-    orientation: {
-      heading: 0.5,
-      pitch: -0.5,
-      roll: 0,
-    },
-  });
-
-  /**
-   * Geojson 数据使用。
-   */
-  const geojsonDataSource = await GeoJsonDataSource.load(
-    '/geojson/NYC.geojson',
-    {
-      clampToGround: true, // 确保多边形贴地
-    }
-  );
-
-  let neighborhooks;
-  // 所有的geojson数据在正式使用时，都需要验证是否符合规则。使用方法：fixPolygons2
-  const fixGeojsonDataSource = fixPolygons2(geojsonDataSource);
-  viewer.dataSources.add(fixGeojsonDataSource);
-  // viewer.zoomTo(fixGeojsonDataSource);
-  neighborhooks = fixGeojsonDataSource.entities;
-  const dataEntities = fixGeojsonDataSource.entities.values;
-  dataEntities.forEach((de) => {
-    if (defined(de.polygon)) {
-      de.name = de.properties.boro_name;
-      de.polygon.material = Color.fromRandom({
-        red: 0.1,
-        maximumGreen: 0.5,
-        minimumBlue: 0.5,
-        alpha: 0.8,
-      });
-
-      de.polygon.classificationType = ClassificationType.TERRAIN;
-      const polyPosition = de.polygon.hierarchy.getValue(
-        JulianDate.now()
-      ).positions;
-      let polyCenter = BoundingSphere.fromPoints(polyPosition).center;
-
-      polyCenter = Ellipsoid.WGS84.scaleToGeocentricSurface(polyCenter);
-      de.position = polyCenter;
-
-      // 生成地区块的标签
-      de.label = {
-        text: de.name,
-        showBackground: true,
-        scale: 0.6,
-        horizontalOrigin: HorizontalOrigin.CENTER,
-        verticalOrigin: VerticalOrigin.BOTTOM,
-        // 显示的极限值：当高度达到多少时不在显示标签
-        distanceDisplayCondition: new DistanceDisplayCondition(10, 8000),
-        // 禁用值
-        disableDepthTestDistance: 100,
-      };
-    }
-  });
-
-  /**
-   * 加载KML数据文件, 文件存在问题，需要后续修改文件。
-   */
-  KmlDataSource.load('/kml/facilities.kml', {
-    camera: viewer.scene.camera,
-    canvas: viewer.scene.canvas,
-    clampToGround: true,
-  }).then((kmlDataSource) => {
-    viewer.dataSources.add(kmlDataSource);
-    // console.error(kmlDataSource)
-    const kmlCacheEntities = kmlDataSource.entities.values;
-    // console.error(kmlDataSource);
-    kmlCacheEntities.forEach((ke) => {
-      if (!defined(ke.billboard)) {
-        ke.billboard = {};
-      }
-      ke.label = null;
-      ke.billboard.verticalOrigin = VerticalOrigin.BOTTOM;
-      ke.billboard.image = '/kml/images/local.svg';
-      // ke.label = undefined;
-      // 添加显示距离条件
-      ke.billboard.distanceDisplayCondition = new DistanceDisplayCondition(
-        10.0,
-        20000.0
-      );
-      // 与度为单位计算经纬度;
-      const cartographicPosition = Cartographic.fromCartesian(
-        ke.position.getValue(JulianDate.now())
-      );
-      const lat = Math.toDegrees(cartographicPosition.latitude); // 纬度
-      const lon = Math.toDegrees(cartographicPosition.longitude); // 经度
-      const description = `<div>
-            <div><span>经度：</span><span>${lon}</span></div>
-            <div><span>纬度：</span><span>${lat}</span></div>
-          </div>`;
-
-      ke.description = description;
+    // 异步加载全球地形
+    const terrainProvider = await Cesium.createWorldTerrainAsync();
+    // 配置Cesium的Token
+    Cesium.Ion.defaultAccessToken = props.token;
+    // 初始化 Viewer
+    viewer = new Cesium.Viewer(cesiumContainer.value, {
+      terrainProvider,
+      ...props.options,
     });
+
+    // 监听瓦片加载进度
+    tileProgressListener = monitorTileLoading();
+
+    // 性能监控
+    monitorPerformance();
+
+    emit('loaded', viewer); // 通知父组件 Viewer 加载完成
+  } catch (error) {
+    console.error('Cesium initialization error:', error);
+  }
+};
+
+// **性能监控与瓶颈点标记**
+const monitorPerformance = () => {
+  const logMetrics = async () => {
+    const frameRate = viewer.scene.frameState.frameRate || 0;
+    const drawCalls = viewer.scene.frameState.commandList.length;
+
+    // 记录日志
+    const log = {
+      timestamp: new Date().toISOString(),
+      frameRate,
+      drawCalls,
+    };
+    state.performanceLogs.push(log);
+    emit('performanceLogged', log);
+
+    // 性能瓶颈分析与响应
+    if (drawCalls > props.performanceThresholds.maxDrawCalls) {
+      const bottleneck = {
+        type: 'High Draw Calls',
+        value: drawCalls,
+        timestamp: log.timestamp,
+      };
+      state.performanceWarning = `High draw calls: ${drawCalls}`;
+      state.bottleneckReport.push(bottleneck); // 添加到瓶颈报告
+      state.bottleneckPoints.push({
+        name: 'Bottleneck',
+        coord: [log.timestamp, drawCalls],
+      }); // 图表标记
+      emit('bottleneckDetected', bottleneck);
+      await applyOptimization('reduceEntities');
+    } else if (frameRate < props.performanceThresholds.minFrameRate) {
+      const bottleneck = {
+        type: 'Low Frame Rate',
+        value: frameRate,
+        timestamp: log.timestamp,
+      };
+      state.performanceWarning = `Low frame rate: ${frameRate} FPS`;
+      state.bottleneckReport.push(bottleneck); // 添加到瓶颈报告
+      state.bottleneckPoints.push({
+        name: 'Bottleneck',
+        coord: [log.timestamp, frameRate],
+        yAxis: frameRate,
+      }); // 图表标记
+      emit('bottleneckDetected', bottleneck);
+      await applyOptimization('reduceQuality');
+    } else {
+      state.performanceWarning = null;
+    }
+
+    // 更新性能日志图表
+    updatePerformanceChart();
+  };
+
+  performanceLogInterval = setInterval(logMetrics, 5000);
+};
+
+// **瓶颈响应优化策略**
+const applyOptimization = async (strategy) => {
+  switch (strategy) {
+    case 'reduceEntities': // 减少实体数量
+      console.warn('Applying optimization: Reducing entities');
+      emit('optimizationApplied', { strategy: 'reduceEntities' });
+      await reduceEntities();
+      break;
+
+    case 'reduceQuality': // 降低渲染质量
+      console.warn('Applying optimization: Reducing rendering quality');
+      viewer.scene.fxaa = false; // 关闭抗锯齿
+      viewer.scene.fog.enabled = false; // 禁用雾效
+      viewer.scene.globe.maximumScreenSpaceError = 10; // 降低地球表面渲染精度
+      emit('optimizationApplied', { strategy: 'reduceQuality' });
+      break;
+
+    default:
+      console.warn('Unknown optimization strategy:', strategy);
+  }
+};
+
+// **减少实体数量**
+const reduceEntities = async () => {
+  const entities = viewer.entities.values;
+
+  for (let i = entities.length - 1; i >= 0; i--) {
+    if (entities[i].priority && entities[i].priority < 5) {
+      viewer.entities.remove(entities[i]);
+    }
+  }
+};
+
+// **性能日志图表**
+const initPerformanceChart = async () => {
+  await nextTick(); // 确保 DOM 渲染完成
+
+  const chart = echarts.init(performanceChart.value);
+  chart.setOption({
+    title: { text: 'Performance Metrics', left: 'center' },
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['Frame Rate', 'Draw Calls'], bottom: '0' },
+    grid: { left: '10%', right: '10%', top: '15%', bottom: '15%' },
+    xAxis: { type: 'category', data: [] },
+    yAxis: [
+      { type: 'value', name: 'Frame Rate (FPS)', min: 0 },
+      { type: 'value', name: 'Draw Calls', min: 0 },
+    ],
+    series: [
+      { name: 'Frame Rate', type: 'line', data: [], markPoint: { data: [] } },
+      { name: 'Draw Calls', type: 'line', data: [], markPoint: { data: [] } },
+    ],
   });
-  // console.error(kmlDataSource);
 
-  // geojsonDataSource.then((dataSources) => {
-  //   // 数据添加到查看器中
-  // });
-
-  /**
-   *  从czml文件加载飞行路径
-   */
-  // const czmlDataSource = CzmlDataSource.load();
+  state.performanceChartInstance = chart;
 };
 
-// 检查多边形是否遵循右手规则，返回错误信息数组
-const checkPolygons = (dataSource) => {
-  let errors = [];
-  const entities = dataSource.entities.values;
-  for (const entity of entities) {
-    if (entity.polygon) {
-      const coordinates = entity.polygon.hierarchy.getValue(
-        JulianDate.now()
-      ).positions;
-      const isClockwise = Cesium.PolygonHierarchy.isClockwise(
-        Cartesian3.fromDegreesArrayHeights(coordinates)
+const updatePerformanceChart = () => {
+  if (!state.performanceChartInstance) return;
+
+  const categories = state.performanceLogs.map((log) => log.timestamp);
+  const frameRateData = state.performanceLogs.map((log) => log.frameRate);
+  const drawCallsData = state.performanceLogs.map((log) => log.drawCalls);
+
+  state.performanceChartInstance.setOption({
+    xAxis: { data: categories },
+    series: [
+      {
+        name: 'Frame Rate',
+        data: frameRateData,
+        markPoint: {
+          data: state.bottleneckPoints.filter(
+            (point) =>
+              point.coord[1] <= props.performanceThresholds.minFrameRate
+          ),
+        },
+      },
+      {
+        name: 'Draw Calls',
+        data: drawCallsData,
+        markPoint: {
+          data: state.bottleneckPoints.filter(
+            (point) => point.coord[1] > props.performanceThresholds.maxDrawCalls
+          ),
+        },
+      },
+    ],
+  });
+};
+
+// **加载进度条显示**
+const monitorTileLoading = () => {
+  const globe = viewer.scene.globe;
+
+  const listener = (remainingTiles) => {
+    if (remainingTiles === 0) {
+      state.loadingProgress = 100; // 加载完成
+      state.loading = false;
+    } else {
+      const maxTiles = 100;
+      state.loadingProgress = Math.min(
+        100,
+        ((maxTiles - remainingTiles) / maxTiles) * 100
+      ).toFixed(0);
+    }
+  };
+
+  globe.tileLoadProgressEvent.addEventListener(listener);
+  return listener;
+};
+
+// **销毁 Cesium Viewer 并释放内存**
+const destroyCesium = () => {
+  if (viewer) {
+    if (performanceLogInterval) {
+      clearInterval(performanceLogInterval);
+      performanceLogInterval = null;
+    }
+    if (tileProgressListener) {
+      viewer.scene.globe.tileLoadProgressEvent.removeEventListener(
+        tileProgressListener
       );
-      if (isClockwise) {
-        errors.push({
-          entity: entity.id,
-          error: 'Polygon exterior is clockwise',
-        });
-      }
+      tileProgressListener = null;
+    }
+    viewer.destroy();
+    viewer = null;
+    if (cesiumContainer.value) {
+      cesiumContainer.value.innerHTML = '';
     }
   }
-  return errors;
 };
 
-// 修复多边形，使其遵循右手规则
-const fixPolygons = (dataSource) => {
-  const entities = dataSource.entities.values;
-  for (const entity of entities) {
-    if (entity.polygon) {
-      // 获取当前时间的多边形坐标
-      const hierarchy = entity.polygon.hierarchy;
-      let coordinates = hierarchy.getValue(JulianDate.now()).positions;
-
-      // 检查坐标是否为对象，并且包含 positions 属性
-      if (typeof coordinates === 'object' && coordinates.positions) {
-        coordinates = coordinates.positions;
-      }
-
-      // 将坐标转换为 Cartesian3 数组
-      const cartesian3Positions = coordinates.map((coord) => {
-        return Cartesian3.fromDegrees(coord.x, coord.y, coord.z);
-      });
-
-      /// console.error(cartesian3Positions);
-
-      // 检查多边形是否为顺时针，并在必要时反转坐标
-
-      if (isClockwise(cartesian3Positions)) {
-        const reversedCartesian3Positions = cartesian3Positions.reverse();
-        const reversedCoordinates = reversedCartesian3Positions.map(
-          (cartesian) => {
-            return [Math.toDegrees(cartesian.x), Math.toDegrees(cartesian.y)];
-          }
-        );
-
-        entity.polygon.hierarchy = new ConstantProperty(
-          new PolygonHierarchy(reversedCoordinates)
-        );
-      }
-    }
-  }
-  return dataSource;
-};
-
-const fixPolygons2 = (dataSource) => {
-  const entities = dataSource.entities.values;
-  for (const entity of entities) {
-    if (entity.polygon) {
-      const hierarchy = entity.polygon.hierarchy;
-      const positions = hierarchy.getValue(JulianDate.now()).positions;
-      if (isClockwise(positions)) {
-        // 如果是顺时针，则反转坐标
-        const reversedPositions = positions.slice().reverse();
-        entity.polygon.hierarchy = new ConstantProperty(
-          new PolygonHierarchy(reversedPositions)
-        );
-      }
-    }
-  }
-  return dataSource;
-};
-
-const isClockwise = (positions) => {
-  const area = positions.reduce((acc, cur, i) => {
-    const next = positions[(i + 1) % positions.length];
-    return acc + (cur.x * next.y - next.x * cur.y);
-  }, 0);
-  return area < 0; // 如果面积为负，则为顺时针
-};
-
-const destroyCesiumViewer = () => {
-  if (viewer && defined(viewer)) {
-    viewer.entities.removeAll();
-    viewer.imageryLayers.removeAll();
-    viewer.dataSources.removeAll();
-    // viewer.scene.primitives.removeAll();
-    // 获取webgl上下文
-    let gl = viewer.scene.context._originalGLContext;
-    gl.canvas.width = 1;
-    gl.canvas.height = 1;
-    viewer.destroy(); // 销毁Viewer实例
-    gl.getExtension('WEBGL_lose_context').loseContext();
-    gl = null;
-    window.viewer = null;
-    console.log('cesium销毁');
-  }
-};
-
-onMounted(() => {
+// **重新加载 Cesium**
+const reloadCesium = () => {
+  destroyCesium();
   initCesium();
-  // viewer.camera.setView({
-  //   /**
-  //    * 初始坐标
-  //    */
-  //   destination: Cartesian3.fromDegrees(113.318977, 23.114115, 20000),
-  //   /**
-  //    * 观看角度
-  //    */
-  //   orientation: {
-  //     /**
-  //      * 旋转角度
-  //      */
-  //     // heading: 0.6
+  initPerformanceChart();
+};
 
-  //     /**
-  //      * 俯仰角
-  //      */
-  //     pitch: Math.toRadians(0),
-  //   },
-  // });
+// **生命周期钩子**
+onMounted(() => {
+  if (!props.token) {
+    console.error(`Please fill in the correct token!`);
+  }
+  initCesium();
+  initPerformanceChart();
 });
-onUnmounted(() => {
-  destroyCesiumViewer();
+
+onBeforeUnmount(() => {
+  destroyCesium(); // 页面销毁时释放 Cesium 资源
 });
+
+watch(
+  () => props.token,
+  (newValue) => {
+    reloadCesium();
+  }
+);
 </script>
+
 <style lang="less" scoped>
-.cesium-component-root {
-  height: 100%;
+.cesium-container {
   width: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
+  height: 100%;
+}
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 20px;
+}
+.performance-overlay {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px;
+  background: rgba(255, 165, 0, 0.9);
+  color: #fff;
+  border-radius: 5px;
+  font-size: 16px;
+  z-index: 10;
+}
+.performance-chart-container {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  width: calc(100% - 20px);
+  height: 300px;
+  z-index: 10;
+}
+.performance-chart {
+  width: 100%;
+  height: 100%;
+}
+.bottleneck-report {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  max-width: 300px;
+  z-index: 10;
+}
+.bottleneck-report h3 {
+  margin: 0;
+  margin-bottom: 5px;
 }
 </style>

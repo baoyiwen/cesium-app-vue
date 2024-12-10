@@ -86,3 +86,7 @@ export const BaseSettings = {
   title: '数字城市演示项目',
   projectCopyright: 'My Three.js Library ©2024'
 }
+
+export const CesiumSetting = {
+  token: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0N2YxOWQ0NC1mYTkyLTQzYTEtOWU0Ny1jOTQyOTE2ZDFlOTMiLCJpZCI6MjMyMTc3LCJpYXQiOjE3MjI4NDUxNzN9.UijwFTk4emxDLQHMXFaA2-36v3c1kKVV-EVs0OGO54o`
+}
