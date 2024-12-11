@@ -1,34 +1,40 @@
 <template>
   <div class="cesium-container" ref="cesiumContainer"></div>
   <!-- 加载进度条 -->
-  <div v-if="loading" class="loading-overlay">
-    Loading... {{ loadingProgress }}%
+  <div v-if="state.loading" class="loading-overlay">
+    Loading... {{ state.loadingProgress }}%
   </div>
   <!-- 性能瓶颈警告 -->
-  <div v-if="performanceWarning" class="performance-overlay">
-    <p>Performance Warning: {{ performanceWarning }}</p>
-  </div>
+  <!-- <div v-if="state.performanceWarning" class="performance-overlay">
+    <p>Performance Warning: {{ state.performanceWarning }}</p>
+  </div> -->
   <!-- 性能日志图表 -->
-  <div class="performance-chart-container" v-show="showPerformanceChart">
+  <!-- <div class="performance-chart-container" v-show="state.showPerformanceChart">
     <div class="performance-chart" ref="performanceChart"></div>
-  </div>
+  </div> -->
   <!-- 自动化瓶颈分析报告 -->
-  <div class="bottleneck-report" v-if="bottleneckReport.length > 0">
+  <!-- <div class="bottleneck-report" v-if="state.bottleneckReport.length > 0">
     <h3>Bottleneck Report</h3>
     <ul>
-      <li v-for="(item, index) in bottleneckReport" :key="index">
+      <li v-for="(item, index) in state.bottleneckReport" :key="index">
         <strong>{{ item.type }}</strong> at {{ item.timestamp }}:
         {{ item.value }}
       </li>
     </ul>
-  </div>
+  </div> -->
 </template>
 
 <script setup>
 import * as Cesium from 'cesium';
-import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import {
+  ref,
+  reactive,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  watch,
+} from 'vue';
 import * as echarts from 'echarts';
-import { watch } from 'less';
 
 const props = defineProps({
   options: {
@@ -87,6 +93,8 @@ const initCesium = async () => {
       ...props.options,
     });
 
+    // viewer.scene.globe.depthTestAgainstTerrain = true;
+    viewer.scene.debugShowFramesPerSecond = true;
     // 监听瓦片加载进度
     tileProgressListener = monitorTileLoading();
 
@@ -149,7 +157,7 @@ const monitorPerformance = () => {
     }
 
     // 更新性能日志图表
-    updatePerformanceChart();
+    // updatePerformanceChart();
   };
 
   performanceLogInterval = setInterval(logMetrics, 5000);
@@ -189,61 +197,61 @@ const reduceEntities = async () => {
 };
 
 // **性能日志图表**
-const initPerformanceChart = async () => {
-  await nextTick(); // 确保 DOM 渲染完成
+// const initPerformanceChart = async () => {
+//   await nextTick(); // 确保 DOM 渲染完成
 
-  const chart = echarts.init(performanceChart.value);
-  chart.setOption({
-    title: { text: 'Performance Metrics', left: 'center' },
-    tooltip: { trigger: 'axis' },
-    legend: { data: ['Frame Rate', 'Draw Calls'], bottom: '0' },
-    grid: { left: '10%', right: '10%', top: '15%', bottom: '15%' },
-    xAxis: { type: 'category', data: [] },
-    yAxis: [
-      { type: 'value', name: 'Frame Rate (FPS)', min: 0 },
-      { type: 'value', name: 'Draw Calls', min: 0 },
-    ],
-    series: [
-      { name: 'Frame Rate', type: 'line', data: [], markPoint: { data: [] } },
-      { name: 'Draw Calls', type: 'line', data: [], markPoint: { data: [] } },
-    ],
-  });
+//   const chart = echarts.init(performanceChart.value);
+//   chart.setOption({
+//     title: { text: 'Performance Metrics', left: 'center' },
+//     tooltip: { trigger: 'axis' },
+//     legend: { data: ['Frame Rate', 'Draw Calls'], bottom: '0' },
+//     grid: { left: '10%', right: '10%', top: '15%', bottom: '15%' },
+//     xAxis: { type: 'category', data: [] },
+//     yAxis: [
+//       { type: 'value', name: 'Frame Rate (FPS)', min: 0 },
+//       { type: 'value', name: 'Draw Calls', min: 0 },
+//     ],
+//     series: [
+//       { name: 'Frame Rate', type: 'line', data: [], markPoint: { data: [] } },
+//       { name: 'Draw Calls', type: 'line', data: [], markPoint: { data: [] } },
+//     ],
+//   });
 
-  state.performanceChartInstance = chart;
-};
+//   state.performanceChartInstance = chart;
+// };
 
-const updatePerformanceChart = () => {
-  if (!state.performanceChartInstance) return;
+// const updatePerformanceChart = () => {
+//   if (!state.performanceChartInstance) return;
 
-  const categories = state.performanceLogs.map((log) => log.timestamp);
-  const frameRateData = state.performanceLogs.map((log) => log.frameRate);
-  const drawCallsData = state.performanceLogs.map((log) => log.drawCalls);
+//   const categories = state.performanceLogs.map((log) => log.timestamp);
+//   const frameRateData = state.performanceLogs.map((log) => log.frameRate);
+//   const drawCallsData = state.performanceLogs.map((log) => log.drawCalls);
 
-  state.performanceChartInstance.setOption({
-    xAxis: { data: categories },
-    series: [
-      {
-        name: 'Frame Rate',
-        data: frameRateData,
-        markPoint: {
-          data: state.bottleneckPoints.filter(
-            (point) =>
-              point.coord[1] <= props.performanceThresholds.minFrameRate
-          ),
-        },
-      },
-      {
-        name: 'Draw Calls',
-        data: drawCallsData,
-        markPoint: {
-          data: state.bottleneckPoints.filter(
-            (point) => point.coord[1] > props.performanceThresholds.maxDrawCalls
-          ),
-        },
-      },
-    ],
-  });
-};
+//   state.performanceChartInstance.setOption({
+//     xAxis: { data: categories },
+//     series: [
+//       {
+//         name: 'Frame Rate',
+//         data: frameRateData,
+//         markPoint: {
+//           data: state.bottleneckPoints.filter(
+//             (point) =>
+//               point.coord[1] <= props.performanceThresholds.minFrameRate
+//           ),
+//         },
+//       },
+//       {
+//         name: 'Draw Calls',
+//         data: drawCallsData,
+//         markPoint: {
+//           data: state.bottleneckPoints.filter(
+//             (point) => point.coord[1] > props.performanceThresholds.maxDrawCalls
+//           ),
+//         },
+//       },
+//     ],
+//   });
+// };
 
 // **加载进度条显示**
 const monitorTileLoading = () => {
@@ -291,7 +299,7 @@ const destroyCesium = () => {
 const reloadCesium = () => {
   destroyCesium();
   initCesium();
-  initPerformanceChart();
+  // initPerformanceChart();
 };
 
 // **生命周期钩子**
@@ -300,7 +308,7 @@ onMounted(() => {
     console.error(`Please fill in the correct token!`);
   }
   initCesium();
-  initPerformanceChart();
+  // initPerformanceChart();
 });
 
 onBeforeUnmount(() => {
@@ -371,5 +379,10 @@ watch(
 .bottleneck-report h3 {
   margin: 0;
   margin-bottom: 5px;
+}
+</style>
+<style lang="less">
+.cesium-viewer-bottom {
+  display: none !important;
 }
 </style>

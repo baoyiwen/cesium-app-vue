@@ -1,10 +1,18 @@
 <template>
   <div class="content-root">
-    <CesiumComponent :options="cesiumOptions" />
+    <CesiumComponent
+      :options="cesiumOptions"
+      :performanceThresholds="{ maxDrawCalls: 800, minFrameRate: 20 }"
+      @performanceLogged="handlePerformanceLog"
+      @bottleneckDetected="handleBottleneck"
+      @optimizationApplied="handleOptimization"
+      @loaded="loadeds"
+    />
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import CesiumComponent from '../components/cesium/CesiumComponent.vue';
 const cesiumOptions = ref({
   /**
@@ -32,6 +40,22 @@ const cesiumOptions = ref({
   animation: false, // 隐藏动画控件
   timeline: false, // 隐藏时间轴
 });
+
+const handlePerformanceLog = (log) => {
+  console.error('Performance Log:', log);
+};
+
+const handleBottleneck = (bottleneck) => {
+  console.error('Bottleneck Detected:', bottleneck);
+};
+
+const handleOptimization = (optimization) => {
+  console.error('Optimization Applied:', optimization);
+};
+
+const loadeds = (viewer) => {
+  console.error('Loaded Viewer:', viewer);
+};
 </script>
 <style scoped>
 .content-root {
