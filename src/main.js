@@ -13,6 +13,7 @@ import zh from './locales/zh.json';
 import { useSettingsStore } from './store/settingsStore';
 import Loading from './views/Loading.vue';
 import VueLazyload from 'vue-lazyload';
+import FormatDates from 'moment';
 
 const i18n = createI18n({
   legacy: false,
@@ -25,6 +26,8 @@ app.use(createPinia());
 app.use(i18n);
 app.use(router);
 app.use(ElementPlus);
+app.use(FormatDates);
+app.config.globalProperties.$datasFormat = FormatDates;
 
 // 全局错误捕获
 app.config.errorHandler = (err, vm, info) => {

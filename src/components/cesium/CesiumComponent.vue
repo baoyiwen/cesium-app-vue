@@ -33,9 +33,11 @@ import {
   onBeforeUnmount,
   nextTick,
   watch,
+  getCurrentInstance,
 } from 'vue';
 import * as echarts from 'echarts';
-
+const instane = getCurrentInstance();
+const formatDates = instane.proxy.$datasFormat;
 const props = defineProps({
   options: {
     type: Object,
@@ -115,7 +117,9 @@ const monitorPerformance = () => {
 
     // 记录日志
     const log = {
-      timestamp: new Date().toISOString(),
+      timestamp: formatDates(new Date().toISOString()).format(
+        'YYYY-MM-DD hh:mm:ss'
+      ),
       frameRate,
       drawCalls,
     };
