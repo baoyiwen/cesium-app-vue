@@ -41,17 +41,17 @@ const cesiumOptions = ref({
   timeline: false, // 隐藏时间轴
 });
 
-const handlePerformanceLog = (log) => {
-  console.error('Performance Log:', log);
-};
+// const handlePerformanceLog = (log) => {
+//   console.error('Performance Log:', log);
+// };
 
-const handleBottleneck = (bottleneck) => {
-  console.error('Bottleneck Detected:', bottleneck);
-};
+// const handleBottleneck = (bottleneck) => {
+//   console.error('Bottleneck Detected:', bottleneck);
+// };
 
-const handleOptimization = (optimization) => {
-  console.error('Optimization Applied:', optimization);
-};
+// const handleOptimization = (optimization) => {
+//   console.error('Optimization Applied:', optimization);
+// };
 
 const loadeds = (viewer) => {
   console.error('Loaded Viewer:', viewer);

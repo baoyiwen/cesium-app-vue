@@ -50,6 +50,10 @@ const props = defineProps({
       minFrameRate: 15, // 最小帧率阈值
     }),
   },
+  isOpenTerrain: {
+    type: Boolean,
+    default: false,
+  },
   token: {
     type: String,
     default:
@@ -86,7 +90,23 @@ const initCesium = async () => {
     state.loading = true;
 
     // 异步加载全球地形
-    const terrainProvider = await Cesium.createWorldTerrainAsync();
+    let terrainProvider = null;
+    if (props.isOpenTerrain) {
+      terrainProvider = await Cesium.createWorldTerrainAsync({
+        /**
+         * 标记，用于指示客户端是否应从服务器请求每片水面罩（如果有）。
+         */
+        requestWaterMask: false,
+        /**
+         * 指示客户端是否应从服务器请求其他照明信息（如果有）的标志。
+         */
+        requestVertexNormals: false,
+      }).then((data) => {
+        console.error(data);
+      });
+    }
+    window.terrain = terrainProvider;
+    console.error(terrainProvider);
     // 配置Cesium的Token
     Cesium.Ion.defaultAccessToken = props.token;
     // 初始化 Viewer
