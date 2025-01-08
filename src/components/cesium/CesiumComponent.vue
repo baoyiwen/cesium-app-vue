@@ -36,6 +36,7 @@ import {
   getCurrentInstance,
 } from 'vue';
 import * as echarts from 'echarts';
+import { RadarScanComponent } from './RadarScanComponent';
 const instane = getCurrentInstance();
 const formatDates = instane.proxy.$datasFormat;
 const props = defineProps({
@@ -73,6 +74,10 @@ const performanceChart = ref(null); // 性能日志图表容器
 let viewer = null; // Cesium Viewer 实例
 let tileProgressListener = null; // 瓦片加载事件监听器引用
 let performanceLogInterval = null; // 性能日志记录定时器
+let geojsonDataSource = null;
+
+let radarCircle = null;
+let scanRange = 500000; // 默认扫描范围，单位：米
 
 const state = reactive({
   loading: true, // 是否正在加载
@@ -83,6 +88,69 @@ const state = reactive({
   bottleneckReport: [], // 自动化瓶颈分析报告
   bottleneckPoints: [], // 用于标记图表上的瓶颈点
 });
+
+// // 创建雷达扫描的圆形效果
+// const createRadarCircle = () => {
+//   const radarMaterial = new Cesium.ImageMaterialProperty({
+//     image: '/public/images/other/X-01.png', // 雷达扫描图片
+//     transparent: true,
+//     repeat: new Cesium.Cartesian2(1, 1),
+//   });
+//   const radarRadius = calculateRadarRadius(); // 根据视图大小计算扫描半径
+
+//   radarCircle = viewer.scene.primitives.add(
+//     new Cesium.GroundPrimitive({
+//       geometryInstances: new Cesium.GeometryInstance({
+//         geometry: new Cesium.CircleGeometry({
+//           radius: radarRadius, // 半径
+//           center: Cesium.Cartesian3.fromDegrees(0, 0), // 雷达中心坐标
+//         }),
+//         attributes: {
+//           color: Cesium.ColorGeometryInstanceAttribute.fromColor(
+//             Cesium.Color.WHITE.withAlpha(0.3)
+//           ),
+//         },
+//       }),
+//       appearance: new Cesium.MaterialAppearance({
+//         material: radarMaterial,
+//         translucent: true,
+//       }),
+//     })
+//   );
+// };
+
+// // 监听视图变化事件
+// const addEventListeners = () => {
+//   // 监听视图缩放和移动事件
+//   viewer.scene.camera.changed.addEventListener(() => {
+//     updateRadarScanRange();
+//   });
+// };
+
+// // 更新雷达扫描范围
+// const updateRadarScanRange = () => {
+//   const newRadius = calculateRadarRadius();
+//   radarCircle.geometryInstances[0].geometry = new Cesium.CircleGeometry({
+//     radius: newRadius,
+//     center: Cesium.Cartesian3.fromDegrees(0, 0),
+//   });
+// };
+
+// // 计算雷达扫描的半径
+// const calculateRadarRadius = () => {
+//   if (!viewer) {
+//     return;
+//   }
+//   const canvas = viewer.canvas;
+//   if (!canvas) {
+//     return;
+//   }
+//   const canvasWidth = canvas.clientWidth;
+//   const canvasHeight = canvas.clientHeight;
+
+//   // 根据视图窗口的大小来动态调整雷达的扫描半径
+//   return Math.min(canvasWidth, canvasHeight) / 5; // 例如使用视图宽度的1/5作为扫描范围
+// };
 
 // **初始化 Cesium Viewer**
 const initCesium = async () => {
@@ -106,16 +174,28 @@ const initCesium = async () => {
       });
     }
     window.terrain = terrainProvider;
-    console.error(terrainProvider);
+    // console.error(terrainProvider);
     // 配置Cesium的Token
-    Cesium.Ion.defaultAccessToken = props.token;
+    // Cesium.Ion.defaultAccessToken = props.token;
     // 初始化 Viewer
     viewer = new Cesium.Viewer(cesiumContainer.value, {
       terrainProvider,
       ...props.options,
     });
-
+    const radarScanComponent = new RadarScanComponent(viewer);
+    radarScanComponent.initialize();
+    /**
+     * Geojson 数据使用。
+     */
+    geojsonDataSource = await Cesium.GeoJsonDataSource.load(
+      '/geojson/cq-map-data.json',
+      {
+        clampToGround: true, // 确保多边形贴地
+      }
+    );
+    viewer.dataSources.add(geojsonDataSource);
     // viewer.scene.globe.depthTestAgainstTerrain = true;
+    viewer.flyTo(geojsonDataSource);
     viewer.scene.debugShowFramesPerSecond = true;
     // 监听瓦片加载进度
     tileProgressListener = monitorTileLoading();
@@ -198,9 +278,9 @@ const applyOptimization = async (strategy) => {
 
     case 'reduceQuality': // 降低渲染质量
       console.warn('Applying optimization: Reducing rendering quality');
-      viewer.scene.fxaa = false; // 关闭抗锯齿
-      viewer.scene.fog.enabled = false; // 禁用雾效
-      viewer.scene.globe.maximumScreenSpaceError = 10; // 降低地球表面渲染精度
+      // viewer.scene.fxaa = false; // 关闭抗锯齿
+      // viewer.scene.fog.enabled = false; // 禁用雾效
+      // viewer.scene.globe.maximumScreenSpaceError = 10; // 降低地球表面渲染精度
       emit('optimizationApplied', { strategy: 'reduceQuality' });
       break;
 
@@ -331,7 +411,10 @@ onMounted(() => {
   if (!props.token) {
     console.error(`Please fill in the correct token!`);
   }
-  initCesium();
+  initCesium().then(() => {
+    // createRadarCircle();
+    // addEventListeners();
+  });
   // initPerformanceChart();
 });
 
