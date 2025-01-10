@@ -89,69 +89,6 @@ const state = reactive({
   bottleneckPoints: [], // 用于标记图表上的瓶颈点
 });
 
-// // 创建雷达扫描的圆形效果
-// const createRadarCircle = () => {
-//   const radarMaterial = new Cesium.ImageMaterialProperty({
-//     image: '/public/images/other/X-01.png', // 雷达扫描图片
-//     transparent: true,
-//     repeat: new Cesium.Cartesian2(1, 1),
-//   });
-//   const radarRadius = calculateRadarRadius(); // 根据视图大小计算扫描半径
-
-//   radarCircle = viewer.scene.primitives.add(
-//     new Cesium.GroundPrimitive({
-//       geometryInstances: new Cesium.GeometryInstance({
-//         geometry: new Cesium.CircleGeometry({
-//           radius: radarRadius, // 半径
-//           center: Cesium.Cartesian3.fromDegrees(0, 0), // 雷达中心坐标
-//         }),
-//         attributes: {
-//           color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-//             Cesium.Color.WHITE.withAlpha(0.3)
-//           ),
-//         },
-//       }),
-//       appearance: new Cesium.MaterialAppearance({
-//         material: radarMaterial,
-//         translucent: true,
-//       }),
-//     })
-//   );
-// };
-
-// // 监听视图变化事件
-// const addEventListeners = () => {
-//   // 监听视图缩放和移动事件
-//   viewer.scene.camera.changed.addEventListener(() => {
-//     updateRadarScanRange();
-//   });
-// };
-
-// // 更新雷达扫描范围
-// const updateRadarScanRange = () => {
-//   const newRadius = calculateRadarRadius();
-//   radarCircle.geometryInstances[0].geometry = new Cesium.CircleGeometry({
-//     radius: newRadius,
-//     center: Cesium.Cartesian3.fromDegrees(0, 0),
-//   });
-// };
-
-// // 计算雷达扫描的半径
-// const calculateRadarRadius = () => {
-//   if (!viewer) {
-//     return;
-//   }
-//   const canvas = viewer.canvas;
-//   if (!canvas) {
-//     return;
-//   }
-//   const canvasWidth = canvas.clientWidth;
-//   const canvasHeight = canvas.clientHeight;
-
-//   // 根据视图窗口的大小来动态调整雷达的扫描半径
-//   return Math.min(canvasWidth, canvasHeight) / 5; // 例如使用视图宽度的1/5作为扫描范围
-// };
-
 // **初始化 Cesium Viewer**
 const initCesium = async () => {
   try {
@@ -180,29 +117,32 @@ const initCesium = async () => {
     // 初始化 Viewer
     viewer = new Cesium.Viewer(cesiumContainer.value, {
       terrainProvider,
+      mapProjection: new Cesium.WebMercatorProjection(), // 确保 mapProjection 被正确配置
+      contextOptions: {
+        webgl: {
+          alpha: true,
+          depth: true,
+          stencil: true,
+          antialias: true,
+          premultipliedAlpha: true,
+          preserveDrawingBuffer: true,
+          failIfMajorPerformanceCaveat: true,
+        },
+      },
       ...props.options,
     });
-    const radarScanComponent = new RadarScanComponent(viewer);
-    radarScanComponent.initialize();
-    /**
-     * Geojson 数据使用。
-     */
-    geojsonDataSource = await Cesium.GeoJsonDataSource.load(
-      '/geojson/cq-map-data.json',
-      {
-        clampToGround: true, // 确保多边形贴地
-      }
-    );
-    viewer.dataSources.add(geojsonDataSource);
-    // viewer.scene.globe.depthTestAgainstTerrain = true;
-    viewer.flyTo(geojsonDataSource);
+    // const radarScanComponent = new RadarScanComponent(viewer);
+    // radarScanComponent.initialize();
+    // viewer.dataSources.add(geojsonDataSource);
+    // // viewer.scene.globe.depthTestAgainstTerrain = true;
+    // viewer.flyTo(geojsonDataSource);
     viewer.scene.debugShowFramesPerSecond = true;
     // 监听瓦片加载进度
     tileProgressListener = monitorTileLoading();
 
     // 性能监控
     monitorPerformance();
-
+    window.map = viewer;
     emit('loaded', viewer); // 通知父组件 Viewer 加载完成
   } catch (error) {
     console.error('Cesium initialization error:', error);
@@ -422,10 +362,27 @@ onBeforeUnmount(() => {
   destroyCesium(); // 页面销毁时释放 Cesium 资源
 });
 
+// 监听地图是否加载完成，然后在加载其他资源
 watch(
-  () => props.token,
-  (newValue) => {
-    reloadCesium();
+  () => state.loadingProgress,
+  (nv, ov) => {
+    if (nv >= 100) {
+      /**
+       * Geojson 数据使用。
+       */
+      Cesium.GeoJsonDataSource.load('/geojson/cq-map-data.json', {
+        clampToGround: true, // 确保多边形贴地
+      }).then((data) => {
+        if (!viewer.dataSources.getByName(data.name).length) {
+          viewer.dataSources.add(data);
+
+          viewer.flyTo(data).then(() => {
+            const radarScanComponent = new RadarScanComponent(viewer);
+            radarScanComponent.initialize();
+          });
+        }
+      });
+    }
   }
 );
 </script>

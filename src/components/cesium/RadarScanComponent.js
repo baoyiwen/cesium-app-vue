@@ -22,8 +22,8 @@ export class RadarScanComponent {
       fabric: {
         type: 'Image',
         uniforms: {
-          image: '/public/images/other/X-01.png', // 雷达扫描图片路径
-          transparent: true,
+          image: '/images/other/X-01.png', // 雷达扫描图片路径
+          transparent: false,
           repeat: new Cesium.Cartesian2(1, 1),
         },
       },
@@ -51,6 +51,19 @@ export class RadarScanComponent {
         }),
       })
     );
+
+    // 使用 requestAnimationFrame 确保在下一帧调用 getGeometryInstanceAttributes
+    requestAnimationFrame(() => {
+      const geometryInstance =
+        this.radarCircle.getGeometryInstanceAttributes('radarCircle');
+      if (geometryInstance) {
+        // 更新几何体的半径
+        geometryInstance.geometry = new Cesium.CircleGeometry({
+          radius: radarRadius,
+          center: Cesium.Cartesian3.fromDegrees(0, 0),
+        });
+      }
+    });
   }
 
   // 计算雷达扫描半径
@@ -93,15 +106,17 @@ export class RadarScanComponent {
   // 更新雷达几何体
   updateRadarGeometry(radius) {
     if (this.radarCircle) {
-      const geometryInstance =
-        this.radarCircle.getGeometryInstanceAttributes('radarCircle');
-      if (geometryInstance) {
-        // 更新几何体的半径
-        geometryInstance.geometry = new Cesium.CircleGeometry({
-          radius: radius,
-          center: Cesium.Cartesian3.fromDegrees(0, 0),
-        });
-      }
+      // 使用 requestAnimationFrame 确保在下一帧调用 getGeometryInstanceAttributes
+      requestAnimationFrame(() => {
+        const geometryInstance = this.radarCircle.getGeometryInstanceAttributes('radarCircle');
+        if (geometryInstance) {
+          // 更新几何体的半径
+          geometryInstance.geometry = new Cesium.CircleGeometry({
+            radius: radius,
+            center: Cesium.Cartesian3.fromDegrees(0, 0),
+          });
+        }
+      });
     }
   }
 
