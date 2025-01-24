@@ -36,7 +36,7 @@ import {
   getCurrentInstance,
 } from 'vue';
 import * as echarts from 'echarts';
-import { RadarScanComponent } from './RadarScanComponent';
+// import { RadarScanComponent } from './RadarScanComponent';
 const instane = getCurrentInstance();
 const formatDates = instane.proxy.$datasFormat;
 const props = defineProps({
@@ -74,10 +74,15 @@ const performanceChart = ref(null); // 性能日志图表容器
 let viewer = null; // Cesium Viewer 实例
 let tileProgressListener = null; // 瓦片加载事件监听器引用
 let performanceLogInterval = null; // 性能日志记录定时器
-let geojsonDataSource = null;
 
-let radarCircle = null;
-let scanRange = 500000; // 默认扫描范围，单位：米
+// 添加雷达扫描效果
+const radarCenter = Cesium.Cartesian3.fromDegrees(116.391, 39.907); // 雷达中心（经纬度）
+const radarColor = Cesium.Color.RED.withAlpha(0.5); // 扫描颜色
+const scanSpeed = 1000; // 扫描速度，单位毫秒
+
+const createRadarScan = (viewer, position, color, duration) => {
+  
+}
 
 const state = reactive({
   loading: true, // 是否正在加载
@@ -377,8 +382,8 @@ watch(
           viewer.dataSources.add(data);
 
           viewer.flyTo(data).then(() => {
-            const radarScanComponent = new RadarScanComponent(viewer);
-            radarScanComponent.initialize();
+            // const radarScanComponent = new RadarScanComponent(viewer);
+            // radarScanComponent.initialize();
           });
         }
       });
