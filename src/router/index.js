@@ -15,6 +15,18 @@ const routes = [
     },
   },
   {
+    path: '/showpage',
+    name: 'Show Page',
+    component: () => import('../page/test/index.vue'),
+    meta: {
+      title: 'Show Page',
+      icon: '/images/menus/map-draw.svg',
+      activeIcon: '/images/menus/map-draw-night.svg',
+      showInMenu: true,
+      isDefault: true,
+    },
+  },
+  {
     path: '/403',
     name: 'Forbidden',
     component: () => import('../views/403.vue'),
