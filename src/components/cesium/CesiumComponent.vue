@@ -463,27 +463,27 @@ watch(
                 20000,
               ],
               () => {
-                const ellipsoidFadeEntity = new EllipsoidFadeEntity(
-                  'reader-test',
-                  centroid,
-                  0,
-                  Cesium.Color.BLUE,
-                  1000
-                );
+                // const ellipsoidFadeEntity = new EllipsoidFadeEntity(
+                //   'reader-test',
+                //   centroid,
+                //   0,
+                //   Cesium.Color.BLUE,
+                //   1000
+                // );
 
-                viewer.entities.add(ellipsoidFadeEntity.entity);
+                // viewer.entities.add(ellipsoidFadeEntity.entity);
 
-                const readerTest = viewer.entities.getById('reader-test');
-                // console.error(readerTest);
-                // console.error(viewer.entities);
-                // console.error(centroid);
-                // setTimeout(() => {
-                //   viewer.entities.removeById('reader-test');
-                // }, 10000)
-                // viewer.camera.flyTo(viewer.entities)
-                viewer.zoomTo(viewer.entities).then((res) => {
-                  // console.error('完成 zoomTo');
-                });
+                // const readerTest = viewer.entities.getById('reader-test');
+                // // console.error(readerTest);
+                // // console.error(viewer.entities);
+                // // console.error(centroid);
+                // // setTimeout(() => {
+                // //   viewer.entities.removeById('reader-test');
+                // // }, 10000)
+                // // viewer.camera.flyTo(viewer.entities)
+                // viewer.zoomTo(viewer.entities).then((res) => {
+                //   // console.error('完成 zoomTo');
+                // });
               }
             );
           });
