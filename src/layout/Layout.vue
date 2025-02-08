@@ -12,9 +12,12 @@
         ></Menu>
       </div>
       <div class="content-layout">
-        <keep-alive>
-          <router-view />
-        </keep-alive>
+        <CesiumModulePage />
+        <div class="content-module">
+          <keep-alive>
+            <router-view />
+          </keep-alive>
+        </div>
       </div>
     </div>
     <div class="footer">
@@ -29,6 +32,7 @@ import Footer from '../components/base/Footer.vue';
 import Menu from '../components/base/menu.vue';
 import { useMenuStore } from '../store/menuStore';
 import { useRoute } from 'vue-router';
+import CesiumModulePage from '../page/CesiumModulePage.vue';
 const menuStore = useMenuStore();
 const route = useRoute();
 // 获取所有的menus/defaultActive
@@ -83,6 +87,16 @@ watch(
     .content-layout {
       flex: 1;
       height: 100%;
+      position: relative;
+      .content-module {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        // background-color: aqua;
+      }
     }
   }
   .footer {

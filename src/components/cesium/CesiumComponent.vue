@@ -26,6 +26,7 @@
 
 <script setup>
 import * as Cesium from 'cesium';
+import * as turf from '@turf/turf';
 import {
   ref,
   reactive,
@@ -36,6 +37,7 @@ import {
   getCurrentInstance,
 } from 'vue';
 import * as echarts from 'echarts';
+import { EllipsoidFadeEntity } from './Reader';
 // import { RadarScanComponent } from './RadarScanComponent';
 const instane = getCurrentInstance();
 const formatDates = instane.proxy.$datasFormat;
@@ -74,15 +76,117 @@ const performanceChart = ref(null); // 性能日志图表容器
 let viewer = null; // Cesium Viewer 实例
 let tileProgressListener = null; // 瓦片加载事件监听器引用
 let performanceLogInterval = null; // 性能日志记录定时器
+let radarPrimitive = null;
 
-// 添加雷达扫描效果
-const radarCenter = Cesium.Cartesian3.fromDegrees(116.391, 39.907); // 雷达中心（经纬度）
-const radarColor = Cesium.Color.RED.withAlpha(0.5); // 扫描颜色
-const scanSpeed = 1000; // 扫描速度，单位毫秒
+// // 添加雷达扫描效果
+// let radarCenter = Cesium.Cartesian3.fromDegrees(116.391, 39.907); // 雷达中心（经纬度）
+// const radarColor = Cesium.Color.RED.withAlpha(0.5); // 扫描颜色
+// const scanSpeed = 1000; // 扫描速度，单位毫秒
+// let radarRadius = 5000.0; // 雷达扫描半径，单位为米
 
-const createRadarScan = (viewer, position, color, duration) => {
-  
-}
+// const createRadarScan = (viewer, position, color, duration, radarRadius) => {
+//   radarPrimitive = new Cesium.Primitive({
+//     geometryInstances: new Cesium.GeometryInstance({
+//       geometry: new Cesium.CircleGeometry({
+//         center: position, // 圆形的中心点
+//         radius: radarRadius, // 圆形的半径
+//         vertexFormat: Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT, // 顶点格式，用于纹理和材质
+//       }),
+//     }),
+//     appearance: new Cesium.EllipsoidSurfaceAppearance({
+//       material: new Cesium.Material({
+//         fabric: {
+//           type: 'Color', // 材质类型为单色
+//           uniforms: {
+//             color: color, // 材质的颜色
+//           },
+//         },
+//       }),
+//     }),
+//     asynchronous: false, // 设置为同步加载，以便立即显示
+//   });
+//   viewer.scene.primitives.add(radarPrimitive);
+//   // requestAnimationFrame(() => {
+//   //   upadteRadarPrimitive();
+//   // });
+//   // const upadteRadarPrimitive = () => {
+//   //   const currentTime = viewer.clock.currentTime; // 使用 Cesium 的当前时间
+//   //   const elapsedTime = Cesium.JulianDate.secondsDifference(
+//   //     currentTime,
+//   //     startTime
+//   //   );
+//   //   const rotationAngle = ((elapsedTime % 360) / 360) * Cesium.Math.TWO_PI;
+
+//   //   const rotationMatrix = Cesium.Matrix3.fromRotationZ(rotationAngle);
+//   //   // console.error(rotationMatrix);
+//   //   const transform = Cesium.Transforms.eastNorthUpToFixedFrame(radarCenter);
+//   //   radarPrimitive.modelMatrix = Cesium.Matrix4.multiplyByMatrix3(
+//   //     transform,
+//   //     rotationMatrix,
+//   //     new Cesium.Matrix4()
+//   //   );
+//   //   upadteRadarPrimitive();
+//   // };
+//   // setInterval(() => {
+//   //   const currentTime = viewer.clock.currentTime; // 使用 Cesium 的当前时间
+//   //   const elapsedTime = Cesium.JulianDate.secondsDifference(
+//   //     currentTime,
+//   //     startTime
+//   //   );
+//   //   const rotationAngle = ((elapsedTime % 360) / 360) * Cesium.Math.TWO_PI;
+//   //   console.error(rotationAngle);
+
+//   //   const rotationMatrix = Cesium.Matrix3.fromRotationZ(rotationAngle);
+//   //   const transform = Cesium.Transforms.eastNorthUpToFixedFrame(radarCenter);
+//   //   radarPrimitive.modelMatrix = Cesium.Matrix4.multiplyByMatrix3(
+//   //     transform,
+//   //     rotationMatrix,
+//   //     new Cesium.Matrix4()
+//   //   );
+//   // }, 2000);
+//   let startTime = Cesium.JulianDate.now();
+//   viewer.clock.onTick.addEventListener(() => {
+//     const currentTime = Cesium.JulianDate.now();
+//     const elapsedTime = Cesium.JulianDate.secondsDifference(
+//       currentTime,
+//       startTime
+//     );
+//     // console.error(elapsedTime);
+
+//     // 确保时间差和角度为正值
+//     const normalizedElapsedTime = ((elapsedTime % 360) + 360) % 360;
+//     const rotationAngle = (normalizedElapsedTime / 360) * Cesium.Math.TWO_PI;
+
+//     // 构造旋转矩阵并更新 modelMatrix
+//     const rotationMatrix = Cesium.Matrix3.fromRotationZ(rotationAngle);
+//     const transform = Cesium.Transforms.eastNorthUpToFixedFrame(radarCenter);
+//     radarPrimitive.modelMatrix = Cesium.Matrix4.multiplyByMatrix3(
+//       transform,
+//       rotationMatrix,
+//       new Cesium.Matrix4()
+//     );
+//   });
+//   // viewer.clock.onTick.addEventListener(() => {
+//   //   const currentTime = viewer.clock.currentTime; // 获取 Cesium 的当前时间
+//   //   const elapsedTime = Cesium.JulianDate.secondsDifference(
+//   //     currentTime,
+//   //     startTime
+//   //   );
+
+//   //   // 确保时间差和角度为正值
+//   //   const normalizedElapsedTime = ((elapsedTime % 360) + 360) % 360;
+//   //   const rotationAngle = (normalizedElapsedTime / 360) * Cesium.Math.TWO_PI;
+
+//   //   // 构造旋转矩阵并更新 modelMatrix
+//   //   const rotationMatrix = Cesium.Matrix3.fromRotationZ(rotationAngle);
+//   //   const transform = Cesium.Transforms.eastNorthUpToFixedFrame(radarCenter);
+//   //   radarPrimitive.modelMatrix = Cesium.Matrix4.multiplyByMatrix3(
+//   //     transform,
+//   //     rotationMatrix,
+//   //     new Cesium.Matrix4()
+//   //   );
+//   // });
+// };
 
 const state = reactive({
   loading: true, // 是否正在加载
@@ -118,7 +222,14 @@ const initCesium = async () => {
     window.terrain = terrainProvider;
     // console.error(terrainProvider);
     // 配置Cesium的Token
-    // Cesium.Ion.defaultAccessToken = props.token;
+    if (!props.token) {
+      console.error(
+        'Missing Cesium Token! Please provide a valid access token.'
+      );
+      return
+    } else {
+      Cesium.Ion.defaultAccessToken = props.token;
+    }
     // 初始化 Viewer
     viewer = new Cesium.Viewer(cesiumContainer.value, {
       terrainProvider,
@@ -134,6 +245,7 @@ const initCesium = async () => {
           failIfMajorPerformanceCaveat: true,
         },
       },
+      sceneMode: Cesium.SceneMode.SCENE3D, // 设置为3D场景模式
       ...props.options,
     });
     // const radarScanComponent = new RadarScanComponent(viewer);
@@ -149,6 +261,7 @@ const initCesium = async () => {
     monitorPerformance();
     window.map = viewer;
     emit('loaded', viewer); // 通知父组件 Viewer 加载完成
+    console.error("Cesium Token:", Cesium.Ion.defaultAccessToken);
   } catch (error) {
     console.error('Cesium initialization error:', error);
   }
@@ -351,6 +464,8 @@ const reloadCesium = () => {
   // initPerformanceChart();
 };
 
+// 雷达扫描效果
+
 // **生命周期钩子**
 onMounted(() => {
   if (!props.token) {
@@ -366,30 +481,137 @@ onMounted(() => {
 onBeforeUnmount(() => {
   destroyCesium(); // 页面销毁时释放 Cesium 资源
 });
+const originalGeoJson = (dataSource) => {
+  const geoJson = dataSource.entities.values
+    .map((entity) => {
+      let coordinates = null;
 
+      // 处理不同的几何类型
+      if (entity.position) {
+        const position = entity.position.getValue(Cesium.JulianDate.now());
+        const cartographic = Cesium.Cartographic.fromCartesian(position);
+        coordinates = [
+          Cesium.Math.toDegrees(cartographic.longitude),
+          Cesium.Math.toDegrees(cartographic.latitude),
+        ];
+      } else if (entity.polygon) {
+        const hierarchy = entity.polygon.hierarchy.getValue(
+          Cesium.JulianDate.now()
+        );
+        coordinates = hierarchy.positions.map((pos) => {
+          const cartographic = Cesium.Cartographic.fromCartesian(pos);
+          return [
+            Cesium.Math.toDegrees(cartographic.longitude),
+            Cesium.Math.toDegrees(cartographic.latitude),
+          ];
+        });
+      }
+
+      if (coordinates) {
+        return {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: coordinates[0], // 取第一个点作为示例
+          },
+          properties: entity.properties,
+        };
+      }
+      return null;
+    })
+    .filter((feature) => feature !== null);
+
+  return {
+    type: 'FeatureCollection',
+    features: geoJson,
+  };
+};
+
+// // 创建实体并应用材质
+// const ellipsoidFadeMaterialProperty = new EllipsoidFadeMaterialProperty({
+//   color: new Cesium.Color(1.0, 0.0, 0.0, 1.0),
+//   duration: 1000,
+// });
+// console.error(
+//   ellipsoidFadeMaterialProperty.getValue,
+//   ellipsoidFadeMaterialProperty.getType
+// );
 // 监听地图是否加载完成，然后在加载其他资源
 watch(
   () => state.loadingProgress,
   (nv, ov) => {
-    if (nv >= 100) {
+    if (nv >= 100 && Cesium.Ion.defaultAccessToken) {
       /**
        * Geojson 数据使用。
        */
       Cesium.GeoJsonDataSource.load('/geojson/cq-map-data.json', {
-        clampToGround: true, // 确保多边形贴地
+        clampToGround: false, // 确保多边形贴地
       }).then((data) => {
         if (!viewer.dataSources.getByName(data.name).length) {
           viewer.dataSources.add(data);
+          const entities = data.entities.values;
+          // console.error('entities', entities, viewer);
+          // // 设置样式
+          // data.style = new Cesium.Cesium3DTileStyle({
+          //   color: "color('red', 0.6)", // 设置  为红色
+          // });
 
+          // console.error('sample', sample.features);
+          // console.error(Cesium.Cartesian3.fromDegrees(data));
           viewer.flyTo(data).then(() => {
-            // const radarScanComponent = new RadarScanComponent(viewer);
-            // radarScanComponent.initialize();
+            const originGeojson = originalGeoJson(data);
+            const centroid = turf.centroid(originGeojson);
+            // radarCenter = Cesium.Cartesian3.fromDegrees(
+            //   centroid.geometry.coordinates[0],
+            //   centroid.geometry.coordinates[1]
+            // );
+
+            flyTo(
+              [
+                centroid.geometry.coordinates[0],
+                centroid.geometry.coordinates[1],
+                20000,
+              ],
+              () => {
+                const ellipsoidFadeEntity = new EllipsoidFadeEntity(
+                  'reader-test',
+                  centroid,
+                  0,
+                  Cesium.Color.BLUE,
+                  1000
+                );
+
+                viewer.entities.add(ellipsoidFadeEntity.entity);
+
+                const readerTest = viewer.entities.getById('reader-test');
+                // console.error(readerTest);
+                // console.error(viewer.entities);
+                // console.error(centroid);
+                // setTimeout(() => {
+                //   viewer.entities.removeById('reader-test');
+                // }, 10000)
+                // viewer.camera.flyTo(viewer.entities)
+                viewer.zoomTo(viewer.entities).then((res) => {
+                  // console.error('完成 zoomTo');
+                });
+              }
+            );
           });
         }
       });
     }
   }
 );
+
+const flyTo = (position, callback) => {
+  if (!viewer) {
+    return;
+  }
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(...position),
+    complete: callback,
+  });
+};
 </script>
 
 <style lang="less" scoped>

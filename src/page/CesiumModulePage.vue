@@ -1,7 +1,6 @@
 <template>
   <div class="content-root">
-    
-    <!-- <CesiumComponent
+    <CesiumComponent
       :options="cesiumOptions"
       :performanceThresholds="{ maxDrawCalls: 800, minFrameRate: 20 }"
       @performanceLogged="handlePerformanceLog"
@@ -9,7 +8,7 @@
       @optimizationApplied="handleOptimization"
       @loaded="loadeds"
       :token="state.cesiumToken"
-    /> -->
+    />
   </div>
 </template>
 
@@ -69,6 +68,5 @@ const loadeds = (viewer) => {
   padding: 0;
   margin: 0;
   overflow: hidden;
-  /* background-color: #0fff; */
 }
 </style>
