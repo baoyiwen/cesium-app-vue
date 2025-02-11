@@ -106,19 +106,31 @@ const handleMenuClick = (path) => {
   .el-menu {
     height: 100%;
     width: 100%;
-    padding: 0;
+    padding: 5px 0;
     background-color: #494949b8;
     border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     .el-menu-item {
-      width: 2rem;
-      height: 2rem;
+      width: 1.5rem;
+      height: 1.5rem;
       padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+      margin-bottom: 8px;
+      border-radius: 50%;
+      overflow: hidden;
+      &:hover {
+        img {
+          transform: scale(1.2);
+        }
+      }
       img {
-        width: 85%;
-        height: 85%;
+        transition: .4s all;
+        width: 100%;
+        height: 100%;
       }
     }
   }

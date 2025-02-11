@@ -7,7 +7,7 @@ const routes = [
     name: 'Home',
     component: () => import('../page/index.vue'),
     meta: {
-      title: 'Home',
+      title: '首页',
       icon: '/images/menus/map-draw.svg',
       activeIcon: '/images/menus/map-draw-night.svg',
       showInMenu: true,
@@ -16,7 +16,7 @@ const routes = [
   },
   {
     path: '/showpage',
-    name: 'Show Page',
+    name: '测试页面',
     component: () => import('../page/test/index.vue'),
     meta: {
       title: 'Show Page',
