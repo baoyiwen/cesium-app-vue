@@ -92,6 +92,10 @@ const props = defineProps({
     type: Number,
     default: 30000000,
   },
+  level: {
+    type: Number,
+    default: 20,
+  },
 });
 // console.error(props.levelConfig);
 const emit = defineEmits([
@@ -125,8 +129,19 @@ const state = reactive({
   loadedLevels: new Map(), // 加载的层级映射
   currentLevel: 0, // 当前
   scale: null, // 比例尺
+  reverseScale: null, // 反向比例尺
   mode: 3, // 地图模式
 });
+
+// 初始化scale
+const initState = () => {
+  state.scale = scaleLinear()
+    .domain([0, props.maxCameraHeight])
+    .range([props.maxZoom, 0]);
+  state.reverseScale = scaleLinear()
+    .domain([props.maxZoom, 0])
+    .range([0, props.maxCameraHeight]);  
+};
 
 // // **更新地图层级**
 // const updateMapLevel = () => {
@@ -548,8 +563,7 @@ const initCesium = async () => {
       ...props.options,
     });
     viewer.camera.positionCartographic.height = props.maxCameraHeight;
-
-    console.error(viewer.camera.positionCartographic.height);
+    viewer.scene.mode = state.mode;
     // const radarScanComponent = new RadarScanComponent(viewer);
     // radarScanComponent.initialize();
     // viewer.dataSources.add(geojsonDataSource);
@@ -558,18 +572,20 @@ const initCesium = async () => {
     viewer.scene.debugShowFramesPerSecond = true;
     // 监听瓦片加载进度
     tileProgressListener = monitorTileLoading();
+    forceInitialLoading();
 
     // 性能监控
     monitorPerformance();
     window.map = viewer;
 
     emit('loaded', viewer); // 通知父组件 Viewer 加载完成
-    state.scale = scaleLinear()
-      .domain([0, viewer.camera.positionCartographic.height])
-      .range([-20, 0]);
+    // state.scale = scaleLinear()
+    //   .domain([0, viewer.camera.positionCartographic.height])
+    //   .range([-20, 0]);
     // console.error(viewer.camera.positionCartographic.height);
     // console.error(viewer.camera);
     // console.error("Cesium Token:", Cesium.Ion.defaultAccessToken);
+    initState();
     initLevelMap();
     // **调整视角**
     requestAnimationFrame(() => {
@@ -582,7 +598,6 @@ const initCesium = async () => {
       // console.log('当前 Zoom 级别：', Math.abs(zoom));
       // console.error('update mode!');
     });
-    viewer.scene.mode = state.mode;
     emit('modeChanged', {
       mode: state.mode,
     });
@@ -806,6 +821,15 @@ const __updateModeLoading = () => {
   emit('modeChanged', {
     mode: viewer.scene.mode,
   });
+};
+
+// 强制初始化加载进度（避免初始化时卡在 99%）
+const forceInitialLoading = () => {
+  // 如果初始模式为 2D，则强制进度为 100%，避免卡住
+  if (viewer.scene.mode === Cesium.SceneMode.SCENE2D) {
+    state.loadingProgress = 100;
+    state.loading = false;
+  }
 };
 
 // **销毁 Cesium Viewer 并释放内存**

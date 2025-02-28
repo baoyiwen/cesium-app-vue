@@ -78,7 +78,7 @@ const getFiles = () => {
 
   return filesObject;
 };
-console.error(getFiles());
+
 const dataFiles = getFiles();
 const levelDatas = ref([
   {
