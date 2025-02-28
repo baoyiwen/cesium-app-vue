@@ -9,6 +9,7 @@
       @loaded="loadeds"
       :token="state.cesiumToken"
       :level-config="levelDatas"
+      @modeChanged="CesiumModeChanged"
     />
   </div>
 </template>
@@ -85,8 +86,8 @@ const levelDatas = ref([
     level: 'COUNTRY',
     height: 10000000,
     geojson: ['/geojson/china_geojson_data/china_geojson.json'], // 支持文件 & 文件夹
-    fillColor: "rgba(0, 0, 255, 0.4)", // 国家层级的填充颜色（蓝色半透明）
-    outlineColor: "#FFFFFF", // 国家边界颜色（白色）
+    fillColor: 'rgba(0, 0, 255, 0.4)', // 国家层级的填充颜色（蓝色半透明）
+    outlineColor: '#FFFFFF', // 国家边界颜色（白色）
     entities: [
       {
         id: 'entity-1',
@@ -101,8 +102,8 @@ const levelDatas = ref([
     level: 'PROVINCE',
     height: 3000000,
     geojson: dataFiles.provinceData,
-    fillColor: "#00FF0088", // 省级填充颜色（绿色半透明）
-    outlineColor: "#FFFF00", // 省级边界颜色（黄色）
+    fillColor: '#00FF0088', // 省级填充颜色（绿色半透明）
+    outlineColor: '#FFFF00', // 省级边界颜色（黄色）
     entities: [
       {
         id: 'entity-2',
@@ -117,8 +118,8 @@ const levelDatas = ref([
     level: 'CITY',
     height: 500000,
     geojson: dataFiles.cityData,
-    fillColor: "#FF0000", // 市级填充颜色（红色）
-    outlineColor: "#000000", // 市级边界颜色（黑色）
+    fillColor: '#FF0000', // 市级填充颜色（红色）
+    outlineColor: '#000000', // 市级边界颜色（黑色）
     entities: [
       {
         id: 'entity-3',
@@ -133,8 +134,8 @@ const levelDatas = ref([
     level: 'COUNTY',
     height: 100000,
     geojson: dataFiles.countyData,
-    fillColor: "#ff2698", // 市级填充颜色（红色）
-    outlineColor: "#000000", // 市级边界颜色（黑色）
+    fillColor: '#ff2698', // 市级填充颜色（红色）
+    outlineColor: '#000000', // 市级边界颜色（黑色）
     entities: [
       {
         id: 'entity-4',
@@ -145,6 +146,10 @@ const levelDatas = ref([
     ],
   },
 ]);
+
+const CesiumModeChanged = (data) => {
+  console.error('mode changed: ', data);
+};
 
 const handlePerformanceLog = (log) => {
   // console.error('Performance Log:', log);

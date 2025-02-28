@@ -39,6 +39,7 @@ import {
 } from 'vue';
 import * as echarts from 'echarts';
 import { EllipsoidFadeEntity } from './Reader';
+import { scaleLinear } from 'd3';
 // import { resolveGeoJsonFiles } from '../../utils/cesium';
 // import { RadarScanComponent } from './RadarScanComponent';
 const instane = getCurrentInstance();
@@ -83,8 +84,16 @@ const props = defineProps({
       },
     ],
   },
+  maxZoom: {
+    type: Number,
+    default: 20,
+  },
+  maxCameraHeight: {
+    type: Number,
+    default: 30000000,
+  },
 });
-console.error(props.levelConfig);
+// console.error(props.levelConfig);
 const emit = defineEmits([
   'loaded',
   'performanceLogged',
@@ -92,6 +101,7 @@ const emit = defineEmits([
   'optimizationApplied',
   'levelChange',
   'dataLoaded',
+  'modeChanged',
 ]);
 
 const cesiumContainer = ref(null); // Cesium 容器引用
@@ -113,6 +123,9 @@ const state = reactive({
   currentLevelId: null, // 当前渲染层级ID
   previousZoomHeight: null, // 记录上一次 zoom 级别
   loadedLevels: new Map(), // 加载的层级映射
+  currentLevel: 0, // 当前
+  scale: null, // 比例尺
+  mode: 3, // 地图模式
 });
 
 // // **更新地图层级**
@@ -145,54 +158,92 @@ const updateMapLevel = () => {
   console.log(`切换到 ${matchedLevel.level} (${matchedLevel.id})`);
 
   if (height < state.previousZoomHeight) {
-    // **Zoom In（高度降低）**
-    console.log('Zoom In: 移除上一层级的 DataSource，保留 Entity');
-    removeGeoJsonFiles(state.currentLevelId);
+    // **Zoom In：加载当前层级 DataSource & Entity，删除上一层级 DataSource**
+    console.log('Zoom In: 加载新 DataSource，删除上一层级 DataSource');
+    setMapLevel(matchedLevel.id);
+    removeGeoJsonFiles(state.currentLevelId); // 移除上一层级 DataSource
   } else {
-    // **Zoom Out（高度升高）**
-    console.log('Zoom Out: 移除小于当前层级的 Entity，保留 DataSource');
-    removeEntitiesBelowLevel(matchedLevel.id);
+    // **Zoom Out：加载当前层级 DataSource，删除下层 Entity & 其他层级 DataSource**
+    console.log(
+      'Zoom Out: 加载新 DataSource，删除下层 Entity & 其他层级 DataSource'
+    );
+    setMapLevel(matchedLevel.id);
+    removeEntitiesBelowLevel(matchedLevel.id); // 清除下层 Entity
+    removeUnusedGeoJsonFiles(matchedLevel.id); // 仅保留当前层级 DataSource
   }
 
   state.previousZoomHeight = height;
   state.currentLevelId = matchedLevel.id;
 };
 
+// const setMapLevel = async (levelId) => {
+//   const level = props.levelConfig.find((l) => l.id === levelId);
+//   if (!level) return;
+
+//   state.currentLevelId = levelId;
+//   console.log(`切换到 ${level.level} (${levelId})`);
+
+//   const files = level.geojson;
+
+//   // **获取上一次已加载的文件**
+//   const previousFiles = new Set(
+//     state.loadedLevels.get(levelId)?.geojsonFiles || []
+//   );
+//   const newFiles = new Set(files);
+
+//   // **计算需要添加和移除的 `GeoJSON`**
+//   const toAdd = [...newFiles].filter((f) => !previousFiles.has(f));
+//   const toRemove = [...previousFiles].filter((f) => !newFiles.has(f));
+
+//   // **移除不需要的 `GeoJSON`**
+//   if (toRemove.length > 0) {
+//     removeGeoJsonFiles(levelId, toRemove);
+//   }
+
+//   // **加载新的 `GeoJSON`**
+//   if (toAdd.length > 0) {
+//     await Promise.all(toAdd.map((file) => loadGeoJson(file, level.id)));
+//   }
+
+//   // **更新 `loadedLevels`**
+//   state.loadedLevels.set(levelId, {
+//     geojsonFiles: files, // 存储当前加载的 `GeoJSON`
+//     geojson: state.loadedLevels.get(levelId)?.geojson || [],
+//     entities: state.loadedLevels.get(levelId)?.entities || [],
+//   });
+// };
+
 const setMapLevel = async (levelId) => {
   const level = props.levelConfig.find((l) => l.id === levelId);
   if (!level) return;
 
-  state.currentLevelId = levelId;
-  console.log(`切换到 ${level.level} (${levelId})`);
+  console.log(`加载 ${level.level} (${levelId}) 的数据`);
 
   const files = level.geojson;
-
-  // **获取上一次已加载的文件**
   const previousFiles = new Set(
     state.loadedLevels.get(levelId)?.geojsonFiles || []
   );
   const newFiles = new Set(files);
-
-  // **计算需要添加和移除的 `GeoJSON`**
   const toAdd = [...newFiles].filter((f) => !previousFiles.has(f));
-  const toRemove = [...previousFiles].filter((f) => !newFiles.has(f));
 
-  // **移除不需要的 `GeoJSON`**
-  if (toRemove.length > 0) {
-    removeGeoJsonFiles(levelId, toRemove);
-  }
-
-  // // **加载新的 `GeoJSON`**
-  // if (toAdd.length > 0) {
-  //   for (const file of toAdd) {
-  //     await loadGeoJson(file, level.id);
-  //   }
-  // }
-
-  // **加载新的 `GeoJSON`**
+  // **加载 GeoJSON**
   if (toAdd.length > 0) {
     await Promise.all(toAdd.map((file) => loadGeoJson(file, level.id)));
   }
+
+  // **加载 Entity**
+  // if (level.entities) {
+  //   level.entities.forEach((entityConfig) => {
+  //     const entity = viewer.entities.add({
+  //       id: entityConfig.id,
+  //       position: Cesium.Cartesian3.fromDegrees(...entityConfig.position),
+  //       label: { text: entityConfig.label },
+  //       billboard: entityConfig.icon ? { image: entityConfig.icon } : undefined,
+  //     });
+
+  //     state.loadedLevels.get(levelId).entities.push(entity);
+  //   });
+  // }
 
   // **更新 `loadedLevels`**
   state.loadedLevels.set(levelId, {
@@ -200,9 +251,6 @@ const setMapLevel = async (levelId) => {
     geojson: state.loadedLevels.get(levelId)?.geojson || [],
     entities: state.loadedLevels.get(levelId)?.entities || [],
   });
-
-  // // **调整视角**
-  // flyToLoadedGeoJson(levelId);
 };
 
 // **调整视角，使视野包含所有 `GeoJSON` 数据**
@@ -305,31 +353,57 @@ const convertColor = (color) => {
 // **加载 GeoJSON**
 const loadGeoJson = async (filePath, levelId) => {
   if (!state.loadedLevels.has(levelId)) {
-    state.loadedLevels.set(levelId, { geojson: [], entities: [] });
+    state.loadedLevels.set(levelId, {
+      geojson: [],
+      entities: [],
+      polylineEntities: [],
+    });
   }
 
   try {
+    const level = props.levelConfig.find((l) => l.id === levelId);
+    const fillColor =
+      convertColor(level?.fillColor) || Cesium.Color.WHITE.withAlpha(0.5);
+    const outlineColor =
+      convertColor(level?.outlineColor) || Cesium.Color.BLACK;
     const dataSource = await Cesium.GeoJsonDataSource.load(filePath, {
-      clampToGround: true,
+      // clampToGround: true,
+      stroke: outlineColor,
+      fill: fillColor,
     });
     viewer.dataSources.add(dataSource);
 
     // **存储多个 `GeoJSON`**
     state.loadedLevels.get(levelId).geojson.push(dataSource);
 
-    // **获取当前层级的颜色配置，并转换**
-    const level = props.levelConfig.find((l) => l.id === levelId);
-    const fillColor =
-      convertColor(level?.fillColor) || Cesium.Color.WHITE.withAlpha(0.5);
-    const outlineColor =
-      convertColor(level?.outlineColor) || Cesium.Color.BLACK;
+    // // **获取当前层级的颜色配置，并转换**
+    // const level = props.levelConfig.find((l) => l.id === levelId);
+    // const fillColor =
+    //   convertColor(level?.fillColor) || Cesium.Color.WHITE.withAlpha(0.5);
+    // const outlineColor =
+    //   convertColor(level?.outlineColor) || Cesium.Color.BLACK;
     // **遍历 `entities` 设置多边形样式**
     dataSource.entities.values.forEach((entity) => {
       if (entity.polygon) {
-        entity.polygon.material = fillColor; // 填充颜色
-        entity.polygon.outline = true; // 启用边缘线
-        entity.polygon.outlineColor = outlineColor; // 边缘线颜色
-        entity.polygon.outlineWidth = 2.0; // 边缘线宽度
+        entity.polygon.material = fillColor; // 设置填充颜色
+        entity.polygon.outline = false; // 关闭默认的 outline
+      }
+
+      // **添加 Polyline 作为边缘**
+      if (entity.polygon && entity.polygon.hierarchy) {
+        const hierarchy = entity.polygon.hierarchy.getValue(
+          Cesium.JulianDate.now()
+        );
+
+        // const polylineEntity = viewer.entities.add({
+        //   polyline: {
+        //     positions: hierarchy.positions,
+        //     width: 2, // 这里可以调整边界线宽度
+        //     material: outlineColor, // 让边缘线更明显
+        //     clampToGround: true, // 贴地
+        //   },
+        // });
+        // state.loadedLevels.get(levelId).polylineEntities.push(polylineEntity);
       }
     });
     // // **自定义 `entities` 样式**
@@ -365,6 +439,27 @@ const loadGeoJson = async (filePath, levelId) => {
   }
 };
 
+const removeUnusedGeoJsonFiles = (currentLevelId) => {
+  state.loadedLevels.forEach((data, id) => {
+    if (id !== currentLevelId) {
+      console.log(`移除 ${id} 层级的 DataSource`);
+      data.geojson.forEach((dataSource) => {
+        viewer.dataSources.remove(toRaw(dataSource));
+      });
+      data.geojson = [];
+
+      // **删除 `Polyline`**
+      // console.error(data.polylineEntities);
+      if (data.polylineEntities) {
+        data.polylineEntities.forEach((polyline) =>
+          viewer.entities.remove(toRaw(polyline))
+        );
+        data.polylineEntities = [];
+      }
+    }
+  });
+};
+
 // **移除不需要的 `GeoJSON`**
 const removeGeoJsonFiles = (levelId, filesToRemove) => {
   if (!state.loadedLevels.has(levelId)) return;
@@ -372,10 +467,9 @@ const removeGeoJsonFiles = (levelId, filesToRemove) => {
   console.log(`清除 ${levelId} 层级的 DataSource`);
 
   const levelData = state.loadedLevels.get(levelId);
-  console.error(levelData, viewer.dataSources);
+  // console.error(levelData, viewer.dataSources);
   levelData.geojson.forEach((dataSource) => {
-    console.error(dataSource);
-    viewer.dataSources.remove(dataSource);
+    viewer.dataSources.remove(toRaw(dataSource));
   });
 
   state.loadedLevels.get(levelId).geojson = [];
@@ -390,9 +484,15 @@ const removeEntitiesBelowLevel = (levelId) => {
     if (clearEntities && data.entities.length > 0) {
       console.log(`清除 ${id} 层级的 Entity`);
       data.entities.forEach((entity) => {
-        viewer.entities.remove(entity);
+        viewer.entities.remove(toRaw(entity));
       });
       data.entities = [];
+      // **删除 `Polyline`**
+      // console.error(data.polylineEntities);
+      data.polylineEntities.forEach((polyline) =>
+        viewer.entities.remove(toRaw(polyline))
+      );
+      data.polylineEntities = [];
     }
   });
 };
@@ -447,6 +547,7 @@ const initCesium = async () => {
       sceneMode: Cesium.SceneMode.SCENE3D, // 设置为3D场景模式
       ...props.options,
     });
+    viewer.camera.positionCartographic.height = props.maxCameraHeight;
 
     console.error(viewer.camera.positionCartographic.height);
     // const radarScanComponent = new RadarScanComponent(viewer);
@@ -463,13 +564,28 @@ const initCesium = async () => {
     window.map = viewer;
 
     emit('loaded', viewer); // 通知父组件 Viewer 加载完成
-    console.error(viewer.camera);
+    state.scale = scaleLinear()
+      .domain([0, viewer.camera.positionCartographic.height])
+      .range([-20, 0]);
+    // console.error(viewer.camera.positionCartographic.height);
+    // console.error(viewer.camera);
     // console.error("Cesium Token:", Cesium.Ion.defaultAccessToken);
     initLevelMap();
     // **调整视角**
     requestAnimationFrame(() => {
       flyToLoadedGeoJson(state.currentLevelId);
-    })
+    });
+    viewer.camera.changed.addEventListener(() => {
+      let zoom = getCurrentZoomLevel(viewer);
+      state.mode = viewer.scene.mode;
+      // console.error('Height:', viewer.camera.positionCartographic.height);
+      // console.log('当前 Zoom 级别：', Math.abs(zoom));
+      // console.error('update mode!');
+    });
+    viewer.scene.mode = state.mode;
+    emit('modeChanged', {
+      mode: state.mode,
+    });
   } catch (error) {
     console.error('Cesium initialization error:', error);
   }
@@ -477,10 +593,10 @@ const initCesium = async () => {
 
 // 初始化LevelMap的方法
 const initLevelMap = async () => {
-  console.error('init level map');
-  viewer.camera.changed.addEventListener(updateMapLevel);
-  state.previousZoomHeight = viewer.camera.positionCartographic.height;
-  await setMapLevel(props.levelConfig[0].id);
+  // console.error('init level map');
+  // viewer.camera.changed.addEventListener(updateMapLevel);
+  // state.previousZoomHeight = viewer.camera.positionCartographic.height;
+  // await setMapLevel(props.levelConfig[0].id);
 };
 
 // **性能监控与瓶颈点标记**
@@ -648,8 +764,48 @@ const monitorTileLoading = () => {
     }
   };
 
+  // 监听瓦片加载进度事件
   globe.tileLoadProgressEvent.addEventListener(listener);
+  // 强制更新进度条，防止卡在99%不动
+  const forceCompleteLoading = () => {
+    state.loadingProgress = 100;
+    state.loading = false;
+  };
+
+  viewer.scene.camera.changed.addEventListener(__updateModeLoading);
+
+  // // 监听渲染事件，确保每次渲染后进度条正确更新
+  // viewer.scene.postRender.addEventListener(() => {
+  //   if (state.loadingProgress < 100) {
+  //     forceCompleteLoading(); // 强制完成加载，避免卡在99%
+  //   }
+  // });
+
   return listener;
+};
+
+const __updateModeLoading = () => {
+  const mode = viewer.scene.mode;
+  // 强制更新进度条，防止卡在99%不动
+  const forceCompleteLoading = () => {
+    state.loadingProgress = 100;
+    state.loading = false;
+  };
+  if (
+    mode === Cesium.SceneMode.SCENE2D ||
+    mode === Cesium.SceneMode.COLUMBUS_VIEW
+  ) {
+    //2D模式下更新进度条
+    state.loadingProgress = 100;
+    state.loading = false;
+  } else if (mode === Cesium.SceneMode.SCENE3D) {
+    if (state.loadingProgress < 100) {
+      forceCompleteLoading();
+    }
+  }
+  emit('modeChanged', {
+    mode: viewer.scene.mode,
+  });
 };
 
 // **销毁 Cesium Viewer 并释放内存**
@@ -698,6 +854,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   destroyCesium(); // 页面销毁时释放 Cesium 资源
 });
+
 const originalGeoJson = (dataSource) => {
   const geoJson = dataSource.entities.values
     .map((entity) => {
@@ -820,6 +977,27 @@ watch(
   }
 );
 
+watch(
+  () => state.mode,
+  () => {
+    emit('modeChanged', {
+      mode: viewer.scene.mode,
+    });
+  }
+);
+
+const changeCesiumMode = (mode) => {
+  viewer && (viewer.scene.mode = mode || 3);
+};
+
+const changeCesiumModeBy2D = () => {
+  viewer && (viewer.scene.mode = 2);
+};
+
+const changeCesiumModeBy3D = () => {
+  viewer && (viewer.scene.mode = 3);
+};
+
 const flyTo = (position, callback) => {
   if (!viewer) {
     return;
@@ -828,6 +1006,35 @@ const flyTo = (position, callback) => {
     destination: Cesium.Cartesian3.fromDegrees(...position),
     complete: callback,
   });
+};
+
+// 通过高度计算zoom级别
+const getZoomLevel = (viewer) => {
+  let height = viewer.camera.positionCartographic.height;
+  let maxHeight = 3000000; // 设定最大 zoom 级别对应的高度
+  let zoom = 18 - Math.log2(height / maxHeight) * 5; // 归一化
+  return Math.max(zoom, 1); // 最小 zoom 设为 1
+};
+
+const dynamicZoomLevel = () => {
+  const zoom = state.scale(viewer.camera.positionCartographic.height);
+  state.currentLevel = Math.abs(zoom);
+  console.error(Math.abs(zoom), 'update zoom');
+};
+
+const getCurrentZoomLevel = (viewer) => {
+  let mode = viewer.scene.mode;
+  let height = viewer.camera.positionCartographic.height;
+  dynamicZoomLevel();
+  // viewer.scene.mode = 2;
+  if (mode === Cesium.SceneMode.SCENE3D) {
+    return getZoomLevel(viewer);
+  } else if (mode === Cesium.SceneMode.SCENE2D) {
+    let resolution = viewer.camera.frustum.right - viewer.camera.frustum.left;
+    return Math.log2(40075016.68557849 / resolution);
+  } else {
+    return getZoomLevel(viewer); // Columbus View
+  }
 };
 </script>
 
