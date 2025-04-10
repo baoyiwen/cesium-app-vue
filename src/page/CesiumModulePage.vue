@@ -148,7 +148,7 @@ const levelDatas = ref([
 ]);
 
 const CesiumModeChanged = (data) => {
-  console.error('mode changed: ', data);
+  // console.error('mode changed: ', data);
 };
 
 const handlePerformanceLog = (log) => {

@@ -140,7 +140,7 @@ const initState = () => {
     .range([props.maxZoom, 0]);
   state.reverseScale = scaleLinear()
     .domain([props.maxZoom, 0])
-    .range([0, props.maxCameraHeight]);  
+    .range([0, props.maxCameraHeight]);
 };
 
 // // **更新地图层级**
@@ -534,7 +534,6 @@ const initCesium = async () => {
       });
     }
     window.terrain = terrainProvider;
-    // console.error(terrainProvider);
     // 配置Cesium的Token
     if (!props.token) {
       console.error(
@@ -564,11 +563,6 @@ const initCesium = async () => {
     });
     viewer.camera.positionCartographic.height = props.maxCameraHeight;
     viewer.scene.mode = state.mode;
-    // const radarScanComponent = new RadarScanComponent(viewer);
-    // radarScanComponent.initialize();
-    // viewer.dataSources.add(geojsonDataSource);
-    // // viewer.scene.globe.depthTestAgainstTerrain = true;
-    // viewer.flyTo(geojsonDataSource);
     viewer.scene.debugShowFramesPerSecond = true;
     // 监听瓦片加载进度
     tileProgressListener = monitorTileLoading();
@@ -579,28 +573,61 @@ const initCesium = async () => {
     window.map = viewer;
 
     emit('loaded', viewer); // 通知父组件 Viewer 加载完成
-    // state.scale = scaleLinear()
-    //   .domain([0, viewer.camera.positionCartographic.height])
-    //   .range([-20, 0]);
-    // console.error(viewer.camera.positionCartographic.height);
-    // console.error(viewer.camera);
-    // console.error("Cesium Token:", Cesium.Ion.defaultAccessToken);
     initState();
     initLevelMap();
     // **调整视角**
     requestAnimationFrame(() => {
       flyToLoadedGeoJson(state.currentLevelId);
     });
+    flyTo([116.3915, 39.9065, 5000]);
+    // viewer.entities.add({
+    //   id: 'marker',
+    //   position: Cesium.Cartesian3.fromDegrees(116.3915, 39.9065, 100),
+    //   point: {
+    //     pixelSize: 10,
+    //     color: Cesium.Color.RED,
+    //   },
+    // });
+
+    viewer.dataSources.add(
+      Cesium.GeoJsonDataSource.load(
+        '/geojson/china_geojson_data/china_geojson.json',
+        {
+          clampToGround: true,
+        }
+      )
+    );
+
+    console.error(viewer.entities, 'entitys');
+
     viewer.camera.changed.addEventListener(() => {
       let zoom = getCurrentZoomLevel(viewer);
       state.mode = viewer.scene.mode;
-      // console.error('Height:', viewer.camera.positionCartographic.height);
-      // console.log('当前 Zoom 级别：', Math.abs(zoom));
-      // console.error('update mode!');
     });
-    emit('modeChanged', {
-      mode: state.mode,
-    });
+    viewer.screenSpaceEventHandler.setInputAction((clickEvent) => {
+      const pickedPosition = viewer.camera.pickEllipsoid(
+        clickEvent.position,
+        viewer.scene.globe.ellipsoid
+      );
+
+      if (pickedPosition) {
+        const cartographic = Cesium.Cartographic.fromCartesian(pickedPosition);
+        const longitude = Cesium.Math.toDegrees(cartographic.longitude);
+        const latitude = Cesium.Math.toDegrees(cartographic.latitude);
+        viewer.entities.removeById('marker'); // 移除之前的标记
+        viewer.entities.add({
+          id: 'marker',
+          position: Cesium.Cartesian3.fromDegrees(longitude, latitude, 100),
+          point: {
+            pixelSize: 10,
+            color: Cesium.Color.RED,
+          },
+        });
+      }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    // emit('modeChanged', {
+    //   mode: state.mode,
+    // });
   } catch (error) {
     console.error('Cesium initialization error:', error);
   }
@@ -1043,7 +1070,7 @@ const getZoomLevel = (viewer) => {
 const dynamicZoomLevel = () => {
   const zoom = state.scale(viewer.camera.positionCartographic.height);
   state.currentLevel = Math.abs(zoom);
-  console.error(Math.abs(zoom), 'update zoom');
+  // console.error(Math.abs(zoom), 'update zoom');
 };
 
 const getCurrentZoomLevel = (viewer) => {

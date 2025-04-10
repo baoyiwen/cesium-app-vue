@@ -13,7 +13,7 @@ export const useUserStore = defineStore('user', {
   actions: {
     // 登录方法
     async login(credentials) {
-      const response = await this.login(credentials);
+      const response = await login(credentials);
       this.token = response.token;
       this.expiresAt = Date.now() + response.expiresIn * 1000; // 计算过期时间
       localStorage.setItem('token', response.token);
