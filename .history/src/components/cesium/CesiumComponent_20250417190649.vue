@@ -416,7 +416,7 @@ const addGeoJson = (url, options = {}, callback) => {
     });
 };
 
-const loadGeojsonAsEntity = async (options) => {
+async function loadGeojsonAsEntity(options) {
   const {
     viewer,
     geojson,
@@ -555,7 +555,7 @@ const loadGeojsonAsEntity = async (options) => {
         (e) => e.layerId === layerId && e._type === type
       ),
   };
-};
+}
 
 // **性能监控与瓶颈点标记**
 const monitorPerformance = () => {

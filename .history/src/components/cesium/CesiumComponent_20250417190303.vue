@@ -230,7 +230,7 @@ const initCesium = async () => {
 
     const districtLayer = await loadGeojsonAsEntity({
       viewer,
-      geojson: '/geojson/cq-map-data.json',
+      geojson: '/data/chongqing.geojson',
       layerId: 'district-chongqing', // ✅ 唯一 ID
       polygon: {
         material: Cesium.Color.GREEN.withAlpha(0.4),
@@ -243,7 +243,6 @@ const initCesium = async () => {
         field: 'name',
       },
     });
-    console.error(districtLayer);
 
     // viewer.screenSpaceEventHandler.setInputAction((clickEvent) => {
     //   const pickedPosition = viewer.camera.pickEllipsoid(
@@ -416,7 +415,7 @@ const addGeoJson = (url, options = {}, callback) => {
     });
 };
 
-const loadGeojsonAsEntity = async (options) => {
+export async function loadGeojsonAsEntity(options) {
   const {
     viewer,
     geojson,
@@ -555,7 +554,7 @@ const loadGeojsonAsEntity = async (options) => {
         (e) => e.layerId === layerId && e._type === type
       ),
   };
-};
+}
 
 // **性能监控与瓶颈点标记**
 const monitorPerformance = () => {

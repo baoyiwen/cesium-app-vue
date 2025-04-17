@@ -216,34 +216,17 @@ const initCesium = async () => {
 
     emit('loaded', viewer); // 通知父组件 Viewer 加载完成
     initState();
-    // addGeoJson('/geojson/cq-map-data.json', {
-    //   clampToGround: true,
-    //   stroke: '#fff', // 边框颜色
-    //   strokeWidth: 2, // 边框宽度
-    //   fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
-    //   polyline: {
-    //     width: 2,
-    //     material: '#ff0000',
-    //     clampToGround: true,
-    //   },
-    // });
-
-    const districtLayer = await loadGeojsonAsEntity({
-      viewer,
-      geojson: '/geojson/cq-map-data.json',
-      layerId: 'district-chongqing', // ✅ 唯一 ID
-      polygon: {
-        material: Cesium.Color.GREEN.withAlpha(0.4),
-      },
+    addGeoJson('/geojson/cq-map-data.json', {
+      clampToGround: true,
+      stroke: '#fff', // 边框颜色
+      strokeWidth: 2, // 边框宽度
+      fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
       polyline: {
         width: 2,
-        material: Cesium.Color.BLACK,
-      },
-      label: {
-        field: 'name',
+        material: '#ff0000',
+        clampToGround: true,
       },
     });
-    console.error(districtLayer);
 
     // viewer.screenSpaceEventHandler.setInputAction((clickEvent) => {
     //   const pickedPosition = viewer.camera.pickEllipsoid(
@@ -416,7 +399,7 @@ const addGeoJson = (url, options = {}, callback) => {
     });
 };
 
-const loadGeojsonAsEntity = async (options) => {
+export async function loadGeojsonAsEntity(options) {
   const {
     viewer,
     geojson,
@@ -555,7 +538,7 @@ const loadGeojsonAsEntity = async (options) => {
         (e) => e.layerId === layerId && e._type === type
       ),
   };
-};
+}
 
 // **性能监控与瓶颈点标记**
 const monitorPerformance = () => {

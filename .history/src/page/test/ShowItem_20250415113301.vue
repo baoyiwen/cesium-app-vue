@@ -2,6 +2,7 @@
   <div class="show-page-root">
     <div class="list-container">
       <div class="list-item">
+        <vue-animation-number :value="1000" />
         <div class="item-title">房地产重大事件</div>
       </div>
     </div>

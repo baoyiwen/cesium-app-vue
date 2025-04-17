@@ -36,7 +36,7 @@ const cesiumOptions = ref({
   // terrainProvider: terrainProvider,
   // terrainProvider: await CesiumTerrainProvider.fromIonAssetId(1),
 
-  infoBox: false,
+  infoBox: true,
   geocoder: true, // 隐藏查找控件。
   homeButton: false, // 隐藏视角返回初始位置按钮
   sceneModePicker: false, // 隐藏视角模式3D, 2D, CV,

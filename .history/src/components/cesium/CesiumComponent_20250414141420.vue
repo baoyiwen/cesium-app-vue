@@ -26,6 +26,7 @@
 
 <script setup>
 import * as Cesium from 'cesium';
+import * as turf from '@turf/turf';
 import {
   ref,
   reactive,
@@ -39,7 +40,6 @@ import {
 import * as echarts from 'echarts';
 import { EllipsoidFadeEntity } from './Reader';
 import { scaleLinear } from 'd3';
-import * as turf from '@turf/turf';
 // import { resolveGeoJsonFiles } from '../../utils/cesium';
 // import { RadarScanComponent } from './RadarScanComponent';
 const instane = getCurrentInstance();
@@ -216,34 +216,13 @@ const initCesium = async () => {
 
     emit('loaded', viewer); // 通知父组件 Viewer 加载完成
     initState();
-    // addGeoJson('/geojson/cq-map-data.json', {
-    //   clampToGround: true,
-    //   stroke: '#fff', // 边框颜色
-    //   strokeWidth: 2, // 边框宽度
-    //   fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
-    //   polyline: {
-    //     width: 2,
-    //     material: '#ff0000',
-    //     clampToGround: true,
-    //   },
-    // });
+    addGeoJson('/geojson/cq-map-data.json', {
+      clampToGround: true,
+      stroke: '#fff', // 边框颜色
+      strokeWidth: 2, // 边框宽度
+      fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
 
-    const districtLayer = await loadGeojsonAsEntity({
-      viewer,
-      geojson: '/geojson/cq-map-data.json',
-      layerId: 'district-chongqing', // ✅ 唯一 ID
-      polygon: {
-        material: Cesium.Color.GREEN.withAlpha(0.4),
-      },
-      polyline: {
-        width: 2,
-        material: Cesium.Color.BLACK,
-      },
-      label: {
-        field: 'name',
-      },
     });
-    console.error(districtLayer);
 
     // viewer.screenSpaceEventHandler.setInputAction((clickEvent) => {
     //   const pickedPosition = viewer.camera.pickEllipsoid(
@@ -290,35 +269,18 @@ const initCesium = async () => {
  * @param callback
  */
 // 添加geojson数据
-const addGeoJson = (url, options = {}, callback) => {
-  const props = {
-    clampToGround: true,
-    stroke: '#fff',
-    strokeWidth: 2,
-    fill: 'rgba(52, 36, 200, 0.5)',
-    polyline: {
-      width: 2,
-      material: '#ff0000',
-      clampToGround: true,
-    },
-    showPolyline: true,
-    showLabel: true,
-    labelField: 'name',
-    ...options,
-  };
-
+const addGeoJson = (url, options, callback) => {
   Cesium.GeoJsonDataSource.load(url, {
-    clampToGround: props.clampToGround,
-    stroke: Cesium.Color.TRANSPARENT,
-    fill: convertColor(props.fill),
-    strokeWidth: props.strokeWidth,
+    clampToGround: options.clampToGround,
+    stroke: Cesium.Color.TRANSPARENT, // 不让默认边界影响显示
+    fill: convertColor(options.fill),
+    strokeWidth: options.strokeWidth,
+    outline: options.outline,
   })
     .then((dataSource) => {
       viewer.dataSources.add(dataSource);
-      const entities = dataSource.entities.values;
-
-      entities.forEach((entity) => {
-        console.error(entity, 'entity');
+      // ✅ 遍历每个实体（已转为 Cesium.Entity）
+      dataSource.entities.values.forEach((entity) => {
         if (!entity.polygon) return;
 
         const hierarchy = entity.polygon.hierarchy?.getValue(
@@ -326,235 +288,41 @@ const addGeoJson = (url, options = {}, callback) => {
         );
         if (!hierarchy || !hierarchy.positions) return;
 
-        const outerRing = hierarchy.positions;
+        // ✅ 获取所有环（外环 + 内环）
+        const rings = [hierarchy.positions];
+        if (hierarchy.holes) {
+          hierarchy.holes.forEach((hole) => {
+            if (hole.positions) {
+              rings.push(hole.positions);
+            }
+          });
+        }
 
-        // ✅ 添加边界 Polyline（模拟轮廓线）
-        if (props.showPolyline) {
-          dataSource.entities.add({
-            id: `polyline-${entity.id}`,
+        // ✅ 为每个环添加独立 Polyline 实体（模拟边界）
+        rings.forEach((positions) => {
+          viewer.entities.add({
             polyline: {
-              positions: outerRing,
-              width: props.polyline.width,
-              material: convertColor(props.polyline.material),
-              clampToGround: props.polyline.clampToGround,
-            },
-            properties: {
-              _source: 'geojson-helper',
-              _type: 'polyline',
+              positions,
+              width: 2,
+              material: Cesium.Color.RED,
+              clampToGround: true,
             },
           });
-        }
-
-        // ✅ 使用 turf.js 计算中心点（更精准）
-        const geoCoords = outerRing.map((p) => {
-          const carto = Cesium.Cartographic.fromCartesian(p);
-          return [
-            Cesium.Math.toDegrees(carto.longitude),
-            Cesium.Math.toDegrees(carto.latitude),
-          ];
         });
-
-        // turf 要求闭合 ring
-        if (
-          geoCoords.length > 0 &&
-          JSON.stringify(geoCoords[0]) !==
-            JSON.stringify(geoCoords[geoCoords.length - 1])
-        ) {
-          geoCoords.push(geoCoords[0]);
-        }
-
-        const turfPolygon = turf.polygon([geoCoords]);
-        const turfCenter = turf.centroid(turfPolygon);
-        const [lon, lat] = turfCenter.geometry.coordinates;
-        const centerCartesian = Cesium.Cartesian3.fromDegrees(lon, lat);
-
-        // ✅ 获取区域名字段（支持自定义）
-        let name = '未知区域';
-        const labelField = props.labelField;
-        if (entity.properties && entity.properties[labelField]) {
-          const fieldProp = entity.properties[labelField];
-          if (fieldProp.getValue) {
-            name = fieldProp.getValue(Cesium.JulianDate.now());
-          } else {
-            name = fieldProp;
-          }
-        }
-
-        // ✅ 添加 label（贴地）
-        if (props.showLabel) {
-          dataSource.entities.add({
-            id: `label-${entity.id}`,
-            position: centerCartesian,
-            label: {
-              text: name,
-              font: '16px sans-serif',
-              fillColor: Cesium.Color.WHITE,
-              outlineColor: Cesium.Color.BLACK,
-              outlineWidth: 2,
-              style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-              verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-              heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-              disableDepthTestDistance: Number.POSITIVE_INFINITY,
-            },
-            properties: {
-              _source: 'geojson-helper',
-              _type: 'label',
-              name,
-            },
-          });
-        }
       });
 
-      // ✅ 镜头飞行
       viewer
         .flyTo(dataSource)
-        .then(() => callback?.())
-        .catch((err) => console.warn('飞行被中断 ❌', err));
+        .then(() => {
+          callback && callback();
+        })
+        .catch((err) => {
+          console.warn('飞行被中断 ❌', err);
+        });
     })
     .catch((err) => {
       console.error('加载 GeoJSON 数据失败:', err);
     });
-};
-
-const loadGeojsonAsEntity = async (options) => {
-  const {
-    viewer,
-    geojson,
-    flyTo = true,
-    layerId = `geojson-layer-${Date.now()}`, // ✅ 默认唯一标识
-    label = true,
-    polygon = {},
-    polyline = {},
-    onEntity,
-  } = options;
-
-  if (!viewer) throw new Error('请传入 Cesium.Viewer 实例');
-
-  const geoData =
-    typeof geojson === 'string'
-      ? await fetch(geojson).then((res) => res.json())
-      : geojson;
-
-  const flat = turf.flatten(geoData);
-  const addedEntities = [];
-
-  flat.features.forEach((feature, i) => {
-    const coords = feature.geometry.coordinates[0];
-    const positions = coords.map(([lon, lat]) =>
-      Cesium.Cartesian3.fromDegrees(lon, lat)
-    );
-
-    // ✅ 添加 Polygon
-    if (polygon !== false) {
-      const {
-        clampToGround = true,
-        material = Cesium.Color.BLUE.withAlpha(0.4),
-        height,
-        extrudedHeight,
-        outline = false,
-        outlineColor,
-      } = polygon;
-
-      const polygonEntity = viewer.entities.add({
-        polygon: {
-          hierarchy: new Cesium.PolygonHierarchy(positions),
-          material,
-          height,
-          extrudedHeight,
-          heightReference: clampToGround
-            ? Cesium.HeightReference.CLAMP_TO_GROUND
-            : Cesium.HeightReference.NONE,
-          outline,
-          outlineColor,
-        },
-        properties: feature.properties,
-        layerId, // ✅ 赋值唯一标识
-        _geojsonTag: true,
-        _type: 'polygon',
-      });
-
-      addedEntities.push(polygonEntity);
-      onEntity?.(polygonEntity, feature.properties);
-    }
-
-    // ✅ 添加 Polyline
-    if (polyline !== false) {
-      const {
-        width = 2,
-        material = Cesium.Color.RED,
-        clampToGround = true,
-      } = polyline;
-
-      const polylineEntity = viewer.entities.add({
-        polyline: {
-          positions,
-          width,
-          material,
-          clampToGround,
-        },
-        layerId, // ✅ 同样打标识
-        _geojsonTag: true,
-        _type: 'polyline',
-      });
-
-      addedEntities.push(polylineEntity);
-    }
-
-    // ✅ 添加 Label
-    if (label !== false) {
-      const { field = 'name', style = {} } =
-        typeof label === 'object' ? label : {};
-
-      const center = turf.centroid(feature).geometry.coordinates;
-      const centerCartesian = Cesium.Cartesian3.fromDegrees(
-        center[0],
-        center[1]
-      );
-      const name =
-        feature.properties?.[field] ?? feature.properties?.name ?? '未命名';
-
-      const labelEntity = viewer.entities.add({
-        position: centerCartesian,
-        label: {
-          text: name,
-          font: '16px sans-serif',
-          fillColor: Cesium.Color.WHITE,
-          outlineColor: Cesium.Color.BLACK,
-          outlineWidth: 2,
-          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          ...style,
-        },
-        layerId, // ✅ 标记归属
-        _geojsonTag: true,
-        _type: 'label',
-      });
-
-      addedEntities.push(labelEntity);
-    }
-  });
-
-  // ✅ 飞行定位
-  if (flyTo && addedEntities.length > 0) {
-    viewer.flyTo(addedEntities);
-  }
-
-  // ✅ 返回带管理能力的结果
-  return {
-    layerId,
-    entities: addedEntities,
-    clear: () => {
-      addedEntities.forEach((e) => viewer.entities.remove(e));
-    },
-    getEntities: () =>
-      viewer.entities.values.filter((e) => e.layerId === layerId),
-    getByType: (type) =>
-      viewer.entities.values.filter(
-        (e) => e.layerId === layerId && e._type === type
-      ),
-  };
 };
 
 // **性能监控与瓶颈点标记**

@@ -216,34 +216,17 @@ const initCesium = async () => {
 
     emit('loaded', viewer); // 通知父组件 Viewer 加载完成
     initState();
-    // addGeoJson('/geojson/cq-map-data.json', {
-    //   clampToGround: true,
-    //   stroke: '#fff', // 边框颜色
-    //   strokeWidth: 2, // 边框宽度
-    //   fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
-    //   polyline: {
-    //     width: 2,
-    //     material: '#ff0000',
-    //     clampToGround: true,
-    //   },
-    // });
-
-    const districtLayer = await loadGeojsonAsEntity({
-      viewer,
-      geojson: '/geojson/cq-map-data.json',
-      layerId: 'district-chongqing', // ✅ 唯一 ID
-      polygon: {
-        material: Cesium.Color.GREEN.withAlpha(0.4),
-      },
+    addGeoJson('/geojson/cq-map-data.json', {
+      clampToGround: true,
+      stroke: '#fff', // 边框颜色
+      strokeWidth: 2, // 边框宽度
+      fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
       polyline: {
         width: 2,
-        material: Cesium.Color.BLACK,
-      },
-      label: {
-        field: 'name',
+        material: '#ff0000',
+        clampToGround: true,
       },
     });
-    console.error(districtLayer);
 
     // viewer.screenSpaceEventHandler.setInputAction((clickEvent) => {
     //   const pickedPosition = viewer.camera.pickEllipsoid(
@@ -315,10 +298,10 @@ const addGeoJson = (url, options = {}, callback) => {
   })
     .then((dataSource) => {
       viewer.dataSources.add(dataSource);
+
       const entities = dataSource.entities.values;
 
       entities.forEach((entity) => {
-        console.error(entity, 'entity');
         if (!entity.polygon) return;
 
         const hierarchy = entity.polygon.hierarchy?.getValue(
@@ -371,8 +354,8 @@ const addGeoJson = (url, options = {}, callback) => {
         // ✅ 获取区域名字段（支持自定义）
         let name = '未知区域';
         const labelField = props.labelField;
-        if (entity.properties && entity.properties[labelField]) {
-          const fieldProp = entity.properties[labelField];
+        if (entity.properties && entity.properties[field]) {
+          const fieldProp = entity.properties[field];
           if (fieldProp.getValue) {
             name = fieldProp.getValue(Cesium.JulianDate.now());
           } else {
@@ -414,147 +397,6 @@ const addGeoJson = (url, options = {}, callback) => {
     .catch((err) => {
       console.error('加载 GeoJSON 数据失败:', err);
     });
-};
-
-const loadGeojsonAsEntity = async (options) => {
-  const {
-    viewer,
-    geojson,
-    flyTo = true,
-    layerId = `geojson-layer-${Date.now()}`, // ✅ 默认唯一标识
-    label = true,
-    polygon = {},
-    polyline = {},
-    onEntity,
-  } = options;
-
-  if (!viewer) throw new Error('请传入 Cesium.Viewer 实例');
-
-  const geoData =
-    typeof geojson === 'string'
-      ? await fetch(geojson).then((res) => res.json())
-      : geojson;
-
-  const flat = turf.flatten(geoData);
-  const addedEntities = [];
-
-  flat.features.forEach((feature, i) => {
-    const coords = feature.geometry.coordinates[0];
-    const positions = coords.map(([lon, lat]) =>
-      Cesium.Cartesian3.fromDegrees(lon, lat)
-    );
-
-    // ✅ 添加 Polygon
-    if (polygon !== false) {
-      const {
-        clampToGround = true,
-        material = Cesium.Color.BLUE.withAlpha(0.4),
-        height,
-        extrudedHeight,
-        outline = false,
-        outlineColor,
-      } = polygon;
-
-      const polygonEntity = viewer.entities.add({
-        polygon: {
-          hierarchy: new Cesium.PolygonHierarchy(positions),
-          material,
-          height,
-          extrudedHeight,
-          heightReference: clampToGround
-            ? Cesium.HeightReference.CLAMP_TO_GROUND
-            : Cesium.HeightReference.NONE,
-          outline,
-          outlineColor,
-        },
-        properties: feature.properties,
-        layerId, // ✅ 赋值唯一标识
-        _geojsonTag: true,
-        _type: 'polygon',
-      });
-
-      addedEntities.push(polygonEntity);
-      onEntity?.(polygonEntity, feature.properties);
-    }
-
-    // ✅ 添加 Polyline
-    if (polyline !== false) {
-      const {
-        width = 2,
-        material = Cesium.Color.RED,
-        clampToGround = true,
-      } = polyline;
-
-      const polylineEntity = viewer.entities.add({
-        polyline: {
-          positions,
-          width,
-          material,
-          clampToGround,
-        },
-        layerId, // ✅ 同样打标识
-        _geojsonTag: true,
-        _type: 'polyline',
-      });
-
-      addedEntities.push(polylineEntity);
-    }
-
-    // ✅ 添加 Label
-    if (label !== false) {
-      const { field = 'name', style = {} } =
-        typeof label === 'object' ? label : {};
-
-      const center = turf.centroid(feature).geometry.coordinates;
-      const centerCartesian = Cesium.Cartesian3.fromDegrees(
-        center[0],
-        center[1]
-      );
-      const name =
-        feature.properties?.[field] ?? feature.properties?.name ?? '未命名';
-
-      const labelEntity = viewer.entities.add({
-        position: centerCartesian,
-        label: {
-          text: name,
-          font: '16px sans-serif',
-          fillColor: Cesium.Color.WHITE,
-          outlineColor: Cesium.Color.BLACK,
-          outlineWidth: 2,
-          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          ...style,
-        },
-        layerId, // ✅ 标记归属
-        _geojsonTag: true,
-        _type: 'label',
-      });
-
-      addedEntities.push(labelEntity);
-    }
-  });
-
-  // ✅ 飞行定位
-  if (flyTo && addedEntities.length > 0) {
-    viewer.flyTo(addedEntities);
-  }
-
-  // ✅ 返回带管理能力的结果
-  return {
-    layerId,
-    entities: addedEntities,
-    clear: () => {
-      addedEntities.forEach((e) => viewer.entities.remove(e));
-    },
-    getEntities: () =>
-      viewer.entities.values.filter((e) => e.layerId === layerId),
-    getByType: (type) =>
-      viewer.entities.values.filter(
-        (e) => e.layerId === layerId && e._type === type
-      ),
-  };
 };
 
 // **性能监控与瓶颈点标记**

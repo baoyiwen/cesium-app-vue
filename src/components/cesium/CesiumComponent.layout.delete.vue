@@ -26,6 +26,7 @@
 
 <script setup>
 import * as Cesium from 'cesium';
+import * as turf from '@turf/turf';
 import {
   ref,
   reactive,
@@ -39,7 +40,6 @@ import {
 import * as echarts from 'echarts';
 import { EllipsoidFadeEntity } from './Reader';
 import { scaleLinear } from 'd3';
-import * as turf from '@turf/turf';
 // import { resolveGeoJsonFiles } from '../../utils/cesium';
 // import { RadarScanComponent } from './RadarScanComponent';
 const instane = getCurrentInstance();
@@ -64,6 +64,37 @@ const props = defineProps({
     type: String,
     default:
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0N2YxOWQ0NC1mYTkyLTQzYTEtOWU0Ny1jOTQyOTE2ZDFlOTMiLCJpZCI6MjMyMTc3LCJpYXQiOjE3MjI4NDUxNzN9.UijwFTk4emxDLQHMXFaA2-36v3c1kKVV-EVs0OGO54o',
+  },
+  levelConfig: {
+    type: Array,
+    default: () => [
+      {
+        id: 'level-1',
+        level: 'COUNTRY',
+        height: 10000000,
+        geojson: ['/geojson/china_geojson_data/china_geojson.json'],
+        entities: [
+          {
+            id: 'entity-1',
+            position: [110, 30],
+            label: '国家中心',
+            // icon: '/icons/country.png',
+          },
+        ],
+      },
+    ],
+  },
+  maxZoom: {
+    type: Number,
+    default: 20,
+  },
+  maxCameraHeight: {
+    type: Number,
+    default: 30000000,
+  },
+  level: {
+    type: Number,
+    default: 20,
   },
 });
 // console.error(props.levelConfig);
@@ -112,6 +143,186 @@ const initState = () => {
     .range([0, props.maxCameraHeight]);
 };
 
+// // **更新地图层级**
+// const updateMapLevel = () => {
+//   const height = viewer.camera.positionCartographic.height;
+//   let matchedLevel = props.levelConfig.find((level) => height > level.height);
+//   // console.error(height, state.previousZoomHeight, height < state.previousZoomHeight);
+//   if (height < state.previousZoomHeight) {
+//     state.previousZoomHeight = height;
+//     return;
+//   }
+
+//   state.previousZoomHeight = height;
+//   if (matchedLevel) {
+//     removeEntitiesBelowLevel(matchedLevel.id);
+//   }
+
+//   if (matchedLevel && state.currentLevelId !== matchedLevel.id) {
+//     console.error('切换');
+//     setMapLevel(matchedLevel.id);
+//   }
+// };
+
+const updateMapLevel = () => {
+  const height = viewer.camera.positionCartographic.height;
+  let matchedLevel = props.levelConfig.find((level) => height > level.height);
+
+  if (!matchedLevel || state.currentLevelId === matchedLevel.id) return;
+
+  console.log(`切换到 ${matchedLevel.level} (${matchedLevel.id})`);
+
+  if (height < state.previousZoomHeight) {
+    // **Zoom In：加载当前层级 DataSource & Entity，删除上一层级 DataSource**
+    console.log('Zoom In: 加载新 DataSource，删除上一层级 DataSource');
+    setMapLevel(matchedLevel.id);
+    removeGeoJsonFiles(state.currentLevelId); // 移除上一层级 DataSource
+  } else {
+    // **Zoom Out：加载当前层级 DataSource，删除下层 Entity & 其他层级 DataSource**
+    console.log(
+      'Zoom Out: 加载新 DataSource，删除下层 Entity & 其他层级 DataSource'
+    );
+    setMapLevel(matchedLevel.id);
+    removeEntitiesBelowLevel(matchedLevel.id); // 清除下层 Entity
+    removeUnusedGeoJsonFiles(matchedLevel.id); // 仅保留当前层级 DataSource
+  }
+
+  state.previousZoomHeight = height;
+  state.currentLevelId = matchedLevel.id;
+};
+
+// const setMapLevel = async (levelId) => {
+//   const level = props.levelConfig.find((l) => l.id === levelId);
+//   if (!level) return;
+
+//   state.currentLevelId = levelId;
+//   console.log(`切换到 ${level.level} (${levelId})`);
+
+//   const files = level.geojson;
+
+//   // **获取上一次已加载的文件**
+//   const previousFiles = new Set(
+//     state.loadedLevels.get(levelId)?.geojsonFiles || []
+//   );
+//   const newFiles = new Set(files);
+
+//   // **计算需要添加和移除的 `GeoJSON`**
+//   const toAdd = [...newFiles].filter((f) => !previousFiles.has(f));
+//   const toRemove = [...previousFiles].filter((f) => !newFiles.has(f));
+
+//   // **移除不需要的 `GeoJSON`**
+//   if (toRemove.length > 0) {
+//     removeGeoJsonFiles(levelId, toRemove);
+//   }
+
+//   // **加载新的 `GeoJSON`**
+//   if (toAdd.length > 0) {
+//     await Promise.all(toAdd.map((file) => loadGeoJson(file, level.id)));
+//   }
+
+//   // **更新 `loadedLevels`**
+//   state.loadedLevels.set(levelId, {
+//     geojsonFiles: files, // 存储当前加载的 `GeoJSON`
+//     geojson: state.loadedLevels.get(levelId)?.geojson || [],
+//     entities: state.loadedLevels.get(levelId)?.entities || [],
+//   });
+// };
+
+const setMapLevel = async (levelId) => {
+  const level = props.levelConfig.find((l) => l.id === levelId);
+  if (!level) return;
+
+  console.log(`加载 ${level.level} (${levelId}) 的数据`);
+
+  const files = level.geojson;
+  const previousFiles = new Set(
+    state.loadedLevels.get(levelId)?.geojsonFiles || []
+  );
+  const newFiles = new Set(files);
+  const toAdd = [...newFiles].filter((f) => !previousFiles.has(f));
+
+  // **加载 GeoJSON**
+  if (toAdd.length > 0) {
+    await Promise.all(toAdd.map((file) => loadGeoJson(file, level.id)));
+  }
+
+  // **加载 Entity**
+  // if (level.entities) {
+  //   level.entities.forEach((entityConfig) => {
+  //     const entity = viewer.entities.add({
+  //       id: entityConfig.id,
+  //       position: Cesium.Cartesian3.fromDegrees(...entityConfig.position),
+  //       label: { text: entityConfig.label },
+  //       billboard: entityConfig.icon ? { image: entityConfig.icon } : undefined,
+  //     });
+
+  //     state.loadedLevels.get(levelId).entities.push(entity);
+  //   });
+  // }
+
+  // **更新 `loadedLevels`**
+  state.loadedLevels.set(levelId, {
+    geojsonFiles: files, // 存储当前加载的 `GeoJSON`
+    geojson: state.loadedLevels.get(levelId)?.geojson || [],
+    entities: state.loadedLevels.get(levelId)?.entities || [],
+  });
+};
+
+// **调整视角，使视野包含所有 `GeoJSON` 数据**
+const flyToLoadedGeoJson = (levelId) => {
+  const levelData = state.loadedLevels.get(levelId);
+  if (!levelData || !levelData.geojson.length) return;
+
+  console.log(`尝试调整视角到 ${levelId} 层级的 GeoJSON`);
+
+  const allPositions = [];
+
+  // **遍历所有 `GeoJsonDataSource` 的 `entities`**
+  levelData.geojson.forEach((dataSource) => {
+    dataSource.entities.values.forEach((entity) => {
+      let positions = [];
+
+      // **处理 `Point` 类型**
+      if (entity.position) {
+        const position = entity.position.getValue(Cesium.JulianDate.now());
+        if (position) positions.push(position);
+      }
+
+      // **处理 `Polygon` 类型**
+      if (entity.polygon && entity.polygon.hierarchy) {
+        const hierarchy = entity.polygon.hierarchy.getValue(
+          Cesium.JulianDate.now()
+        );
+        if (hierarchy && hierarchy.positions) {
+          positions.push(...hierarchy.positions);
+        }
+      }
+
+      // **处理 `Polyline` 类型**
+      if (entity.polyline && entity.polyline.positions) {
+        const linePositions = entity.polyline.positions.getValue(
+          Cesium.JulianDate.now()
+        );
+        if (linePositions) {
+          positions.push(...linePositions);
+        }
+      }
+
+      allPositions.push(...positions);
+    });
+  });
+
+  // **确保至少有一个有效点**
+  if (allPositions.length > 0) {
+    const boundingSphere = Cesium.BoundingSphere.fromPoints(allPositions);
+    viewer.camera.flyToBoundingSphere(boundingSphere, {
+      duration: 2,
+    });
+  } else {
+    console.warn('没有找到有效的位置，无法调整视角');
+  }
+};
+
 // **转换标准 `rgba` 或 `#hex` 颜色到 Cesium.Color**
 const convertColor = (color) => {
   if (!color) return Cesium.Color.WHITE; // 默认白色
@@ -152,6 +363,153 @@ const convertColor = (color) => {
   }
 
   return Cesium.Color.WHITE; // 默认返回白色
+};
+
+// **加载 GeoJSON**
+const loadGeoJson = async (filePath, levelId) => {
+  if (!state.loadedLevels.has(levelId)) {
+    state.loadedLevels.set(levelId, {
+      geojson: [],
+      entities: [],
+      polylineEntities: [],
+    });
+  }
+
+  try {
+    const level = props.levelConfig.find((l) => l.id === levelId);
+    const fillColor =
+      convertColor(level?.fillColor) || Cesium.Color.WHITE.withAlpha(0.5);
+    const outlineColor =
+      convertColor(level?.outlineColor) || Cesium.Color.BLACK;
+    const dataSource = await Cesium.GeoJsonDataSource.load(filePath, {
+      // clampToGround: true,
+      stroke: outlineColor,
+      fill: fillColor,
+    });
+    viewer.dataSources.add(dataSource);
+
+    // **存储多个 `GeoJSON`**
+    state.loadedLevels.get(levelId).geojson.push(dataSource);
+
+    // // **获取当前层级的颜色配置，并转换**
+    // const level = props.levelConfig.find((l) => l.id === levelId);
+    // const fillColor =
+    //   convertColor(level?.fillColor) || Cesium.Color.WHITE.withAlpha(0.5);
+    // const outlineColor =
+    //   convertColor(level?.outlineColor) || Cesium.Color.BLACK;
+    // **遍历 `entities` 设置多边形样式**
+    dataSource.entities.values.forEach((entity) => {
+      if (entity.polygon) {
+        entity.polygon.material = fillColor; // 设置填充颜色
+        entity.polygon.outline = false; // 关闭默认的 outline
+      }
+
+      // **添加 Polyline 作为边缘**
+      if (entity.polygon && entity.polygon.hierarchy) {
+        const hierarchy = entity.polygon.hierarchy.getValue(
+          Cesium.JulianDate.now()
+        );
+
+        // const polylineEntity = viewer.entities.add({
+        //   polyline: {
+        //     positions: hierarchy.positions,
+        //     width: 2, // 这里可以调整边界线宽度
+        //     material: outlineColor, // 让边缘线更明显
+        //     clampToGround: true, // 贴地
+        //   },
+        // });
+        // state.loadedLevels.get(levelId).polylineEntities.push(polylineEntity);
+      }
+    });
+    // // **自定义 `entities` 样式**
+    // // const level = props.levelConfig.find((l) => l.id === levelId);
+    // if (level?.entities?.length) {
+    //   level.entities.forEach((config) => {
+    //     const entity = viewer.entities.add({
+    //       id: config.id,
+    //       position: Cesium.Cartesian3.fromDegrees(...config.position),
+    //       label: {
+    //         text: config.label,
+    //         font: '14px sans-serif',
+    //         fillColor: Cesium.Color.WHITE,
+    //         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+    //         outlineWidth: 2,
+    //         verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+    //         pixelOffset: new Cesium.Cartesian2(0, -10),
+    //       },
+    //       billboard: config.icon
+    //         ? {
+    //             image: config.icon,
+    //             width: 32,
+    //             height: 32,
+    //           }
+    //         : undefined,
+    //     });
+
+    //     state.loadedLevels.get(levelId).entities.push(entity);
+    //   });
+    // }
+  } catch (error) {
+    console.error(`加载 GeoJSON 失败: ${filePath}`, error);
+  }
+};
+
+const removeUnusedGeoJsonFiles = (currentLevelId) => {
+  state.loadedLevels.forEach((data, id) => {
+    if (id !== currentLevelId) {
+      console.log(`移除 ${id} 层级的 DataSource`);
+      data.geojson.forEach((dataSource) => {
+        viewer.dataSources.remove(toRaw(dataSource));
+      });
+      data.geojson = [];
+
+      // **删除 `Polyline`**
+      // console.error(data.polylineEntities);
+      if (data.polylineEntities) {
+        data.polylineEntities.forEach((polyline) =>
+          viewer.entities.remove(toRaw(polyline))
+        );
+        data.polylineEntities = [];
+      }
+    }
+  });
+};
+
+// **移除不需要的 `GeoJSON`**
+const removeGeoJsonFiles = (levelId, filesToRemove) => {
+  if (!state.loadedLevels.has(levelId)) return;
+
+  console.log(`清除 ${levelId} 层级的 DataSource`);
+
+  const levelData = state.loadedLevels.get(levelId);
+  // console.error(levelData, viewer.dataSources);
+  levelData.geojson.forEach((dataSource) => {
+    viewer.dataSources.remove(toRaw(dataSource));
+  });
+
+  state.loadedLevels.get(levelId).geojson = [];
+};
+
+// **清除当前层级之下的所有 Entities**
+const removeEntitiesBelowLevel = (levelId) => {
+  let clearEntities = false;
+
+  state.loadedLevels.forEach((data, id) => {
+    if (id === levelId) clearEntities = true;
+    if (clearEntities && data.entities.length > 0) {
+      console.log(`清除 ${id} 层级的 Entity`);
+      data.entities.forEach((entity) => {
+        viewer.entities.remove(toRaw(entity));
+      });
+      data.entities = [];
+      // **删除 `Polyline`**
+      // console.error(data.polylineEntities);
+      data.polylineEntities.forEach((polyline) =>
+        viewer.entities.remove(toRaw(polyline))
+      );
+      data.polylineEntities = [];
+    }
+  });
 };
 
 // **初始化 Cesium Viewer**
@@ -216,35 +574,36 @@ const initCesium = async () => {
 
     emit('loaded', viewer); // 通知父组件 Viewer 加载完成
     initState();
-    // addGeoJson('/geojson/cq-map-data.json', {
-    //   clampToGround: true,
-    //   stroke: '#fff', // 边框颜色
-    //   strokeWidth: 2, // 边框宽度
-    //   fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
-    //   polyline: {
-    //     width: 2,
-    //     material: '#ff0000',
-    //     clampToGround: true,
+    initLevelMap();
+    // **调整视角**
+    requestAnimationFrame(() => {
+      flyToLoadedGeoJson(state.currentLevelId);
+    });
+    // flyTo([116.3915, 39.9065, 5000]);
+    // viewer.entities.add({
+    //   id: 'marker',
+    //   position: Cesium.Cartesian3.fromDegrees(116.3915, 39.9065, 100),
+    //   point: {
+    //     pixelSize: 10,
+    //     color: Cesium.Color.RED,
     //   },
     // });
 
-    const districtLayer = await loadGeojsonAsEntity({
-      viewer,
-      geojson: '/geojson/cq-map-data.json',
-      layerId: 'district-chongqing', // ✅ 唯一 ID
-      polygon: {
-        material: Cesium.Color.GREEN.withAlpha(0.4),
-      },
-      polyline: {
-        width: 2,
-        material: Cesium.Color.BLACK,
-      },
-      label: {
-        field: 'name',
-      },
-    });
-    console.error(districtLayer);
+    // viewer.dataSources.add(
+    //   Cesium.GeoJsonDataSource.load(
+    //     '/geojson/china_geojson_data/china_geojson.json',
+    //     {
+    //       clampToGround: true,
+    //     }
+    //   )
+    // );
 
+    console.error(viewer.entities, 'entitys');
+
+    viewer.camera.changed.addEventListener(() => {
+      let zoom = getCurrentZoomLevel(viewer);
+      state.mode = viewer.scene.mode;
+    });
     // viewer.screenSpaceEventHandler.setInputAction((clickEvent) => {
     //   const pickedPosition = viewer.camera.pickEllipsoid(
     //     clickEvent.position,
@@ -274,287 +633,12 @@ const initCesium = async () => {
   }
 };
 
-/**
- *
- * @param url
- * @param options
- * 参数名	          说明	                   默认值
- *  fill	          面的填充色	             Cesium.Color.BLUE.withAlpha
- *  stroke	        默认轮廓线颜色（已禁用）	 Cesium.Color.TRANSPARENT
- *  strokeWidth	    默认边界线宽（已禁用）	   2
- *  outline	        是否启用原始 outline	    false
- *  polylineColor	  手动画边界线的颜色	      Cesium.Color.RED
- *  polylineWidth	  手动画边界线的宽度	      2
- *  showPolyline	  是否绘制 polyline 模拟边界线	true
- *  dataSourceName	设置数据源名称（可用于查找）	undefined
- * @param callback
- */
-// 添加geojson数据
-const addGeoJson = (url, options = {}, callback) => {
-  const props = {
-    clampToGround: true,
-    stroke: '#fff',
-    strokeWidth: 2,
-    fill: 'rgba(52, 36, 200, 0.5)',
-    polyline: {
-      width: 2,
-      material: '#ff0000',
-      clampToGround: true,
-    },
-    showPolyline: true,
-    showLabel: true,
-    labelField: 'name',
-    ...options,
-  };
-
-  Cesium.GeoJsonDataSource.load(url, {
-    clampToGround: props.clampToGround,
-    stroke: Cesium.Color.TRANSPARENT,
-    fill: convertColor(props.fill),
-    strokeWidth: props.strokeWidth,
-  })
-    .then((dataSource) => {
-      viewer.dataSources.add(dataSource);
-      const entities = dataSource.entities.values;
-
-      entities.forEach((entity) => {
-        console.error(entity, 'entity');
-        if (!entity.polygon) return;
-
-        const hierarchy = entity.polygon.hierarchy?.getValue(
-          Cesium.JulianDate.now()
-        );
-        if (!hierarchy || !hierarchy.positions) return;
-
-        const outerRing = hierarchy.positions;
-
-        // ✅ 添加边界 Polyline（模拟轮廓线）
-        if (props.showPolyline) {
-          dataSource.entities.add({
-            id: `polyline-${entity.id}`,
-            polyline: {
-              positions: outerRing,
-              width: props.polyline.width,
-              material: convertColor(props.polyline.material),
-              clampToGround: props.polyline.clampToGround,
-            },
-            properties: {
-              _source: 'geojson-helper',
-              _type: 'polyline',
-            },
-          });
-        }
-
-        // ✅ 使用 turf.js 计算中心点（更精准）
-        const geoCoords = outerRing.map((p) => {
-          const carto = Cesium.Cartographic.fromCartesian(p);
-          return [
-            Cesium.Math.toDegrees(carto.longitude),
-            Cesium.Math.toDegrees(carto.latitude),
-          ];
-        });
-
-        // turf 要求闭合 ring
-        if (
-          geoCoords.length > 0 &&
-          JSON.stringify(geoCoords[0]) !==
-            JSON.stringify(geoCoords[geoCoords.length - 1])
-        ) {
-          geoCoords.push(geoCoords[0]);
-        }
-
-        const turfPolygon = turf.polygon([geoCoords]);
-        const turfCenter = turf.centroid(turfPolygon);
-        const [lon, lat] = turfCenter.geometry.coordinates;
-        const centerCartesian = Cesium.Cartesian3.fromDegrees(lon, lat);
-
-        // ✅ 获取区域名字段（支持自定义）
-        let name = '未知区域';
-        const labelField = props.labelField;
-        if (entity.properties && entity.properties[labelField]) {
-          const fieldProp = entity.properties[labelField];
-          if (fieldProp.getValue) {
-            name = fieldProp.getValue(Cesium.JulianDate.now());
-          } else {
-            name = fieldProp;
-          }
-        }
-
-        // ✅ 添加 label（贴地）
-        if (props.showLabel) {
-          dataSource.entities.add({
-            id: `label-${entity.id}`,
-            position: centerCartesian,
-            label: {
-              text: name,
-              font: '16px sans-serif',
-              fillColor: Cesium.Color.WHITE,
-              outlineColor: Cesium.Color.BLACK,
-              outlineWidth: 2,
-              style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-              verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-              heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-              disableDepthTestDistance: Number.POSITIVE_INFINITY,
-            },
-            properties: {
-              _source: 'geojson-helper',
-              _type: 'label',
-              name,
-            },
-          });
-        }
-      });
-
-      // ✅ 镜头飞行
-      viewer
-        .flyTo(dataSource)
-        .then(() => callback?.())
-        .catch((err) => console.warn('飞行被中断 ❌', err));
-    })
-    .catch((err) => {
-      console.error('加载 GeoJSON 数据失败:', err);
-    });
-};
-
-const loadGeojsonAsEntity = async (options) => {
-  const {
-    viewer,
-    geojson,
-    flyTo = true,
-    layerId = `geojson-layer-${Date.now()}`, // ✅ 默认唯一标识
-    label = true,
-    polygon = {},
-    polyline = {},
-    onEntity,
-  } = options;
-
-  if (!viewer) throw new Error('请传入 Cesium.Viewer 实例');
-
-  const geoData =
-    typeof geojson === 'string'
-      ? await fetch(geojson).then((res) => res.json())
-      : geojson;
-
-  const flat = turf.flatten(geoData);
-  const addedEntities = [];
-
-  flat.features.forEach((feature, i) => {
-    const coords = feature.geometry.coordinates[0];
-    const positions = coords.map(([lon, lat]) =>
-      Cesium.Cartesian3.fromDegrees(lon, lat)
-    );
-
-    // ✅ 添加 Polygon
-    if (polygon !== false) {
-      const {
-        clampToGround = true,
-        material = Cesium.Color.BLUE.withAlpha(0.4),
-        height,
-        extrudedHeight,
-        outline = false,
-        outlineColor,
-      } = polygon;
-
-      const polygonEntity = viewer.entities.add({
-        polygon: {
-          hierarchy: new Cesium.PolygonHierarchy(positions),
-          material,
-          height,
-          extrudedHeight,
-          heightReference: clampToGround
-            ? Cesium.HeightReference.CLAMP_TO_GROUND
-            : Cesium.HeightReference.NONE,
-          outline,
-          outlineColor,
-        },
-        properties: feature.properties,
-        layerId, // ✅ 赋值唯一标识
-        _geojsonTag: true,
-        _type: 'polygon',
-      });
-
-      addedEntities.push(polygonEntity);
-      onEntity?.(polygonEntity, feature.properties);
-    }
-
-    // ✅ 添加 Polyline
-    if (polyline !== false) {
-      const {
-        width = 2,
-        material = Cesium.Color.RED,
-        clampToGround = true,
-      } = polyline;
-
-      const polylineEntity = viewer.entities.add({
-        polyline: {
-          positions,
-          width,
-          material,
-          clampToGround,
-        },
-        layerId, // ✅ 同样打标识
-        _geojsonTag: true,
-        _type: 'polyline',
-      });
-
-      addedEntities.push(polylineEntity);
-    }
-
-    // ✅ 添加 Label
-    if (label !== false) {
-      const { field = 'name', style = {} } =
-        typeof label === 'object' ? label : {};
-
-      const center = turf.centroid(feature).geometry.coordinates;
-      const centerCartesian = Cesium.Cartesian3.fromDegrees(
-        center[0],
-        center[1]
-      );
-      const name =
-        feature.properties?.[field] ?? feature.properties?.name ?? '未命名';
-
-      const labelEntity = viewer.entities.add({
-        position: centerCartesian,
-        label: {
-          text: name,
-          font: '16px sans-serif',
-          fillColor: Cesium.Color.WHITE,
-          outlineColor: Cesium.Color.BLACK,
-          outlineWidth: 2,
-          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          ...style,
-        },
-        layerId, // ✅ 标记归属
-        _geojsonTag: true,
-        _type: 'label',
-      });
-
-      addedEntities.push(labelEntity);
-    }
-  });
-
-  // ✅ 飞行定位
-  if (flyTo && addedEntities.length > 0) {
-    viewer.flyTo(addedEntities);
-  }
-
-  // ✅ 返回带管理能力的结果
-  return {
-    layerId,
-    entities: addedEntities,
-    clear: () => {
-      addedEntities.forEach((e) => viewer.entities.remove(e));
-    },
-    getEntities: () =>
-      viewer.entities.values.filter((e) => e.layerId === layerId),
-    getByType: (type) =>
-      viewer.entities.values.filter(
-        (e) => e.layerId === layerId && e._type === type
-      ),
-  };
+// 初始化LevelMap的方法
+const initLevelMap = async () => {
+  // console.error('init level map');
+  viewer.camera.changed.addEventListener(updateMapLevel);
+  state.previousZoomHeight = viewer.camera.positionCartographic.height;
+  await setMapLevel(props.levelConfig[0].id);
 };
 
 // **性能监控与瓶颈点标记**
@@ -822,11 +906,124 @@ onBeforeUnmount(() => {
   destroyCesium(); // 页面销毁时释放 Cesium 资源
 });
 
+const originalGeoJson = (dataSource) => {
+  const geoJson = dataSource.entities.values
+    .map((entity) => {
+      let coordinates = null;
+
+      // 处理不同的几何类型
+      if (entity.position) {
+        const position = entity.position.getValue(Cesium.JulianDate.now());
+        const cartographic = Cesium.Cartographic.fromCartesian(position);
+        coordinates = [
+          Cesium.Math.toDegrees(cartographic.longitude),
+          Cesium.Math.toDegrees(cartographic.latitude),
+        ];
+      } else if (entity.polygon) {
+        const hierarchy = entity.polygon.hierarchy.getValue(
+          Cesium.JulianDate.now()
+        );
+        coordinates = hierarchy.positions.map((pos) => {
+          const cartographic = Cesium.Cartographic.fromCartesian(pos);
+          return [
+            Cesium.Math.toDegrees(cartographic.longitude),
+            Cesium.Math.toDegrees(cartographic.latitude),
+          ];
+        });
+      }
+
+      if (coordinates) {
+        return {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: coordinates[0], // 取第一个点作为示例
+          },
+          properties: entity.properties,
+        };
+      }
+      return null;
+    })
+    .filter((feature) => feature !== null);
+
+  return {
+    type: 'FeatureCollection',
+    features: geoJson,
+  };
+};
+
+// // 创建实体并应用材质
+// const ellipsoidFadeMaterialProperty = new EllipsoidFadeMaterialProperty({
+//   color: new Cesium.Color(1.0, 0.0, 0.0, 1.0),
+//   duration: 1000,
+// });
+// console.error(
+//   ellipsoidFadeMaterialProperty.getValue,
+//   ellipsoidFadeMaterialProperty.getType
+// );
 // 监听地图是否加载完成，然后在加载其他资源
 watch(
   () => state.loadingProgress,
   (nv, ov) => {
     if (nv >= 100 && Cesium.Ion.defaultAccessToken) {
+      // initLevelMap();
+      /**
+       * Geojson 数据使用。
+       */
+      // Cesium.GeoJsonDataSource.load(
+      //   '/geojson/china_geojson_data/china_geojson.json',
+      //   {
+      //     clampToGround: false, // 确保多边形贴地
+      //   }
+      // ).then((data) => {
+      //   if (!viewer.dataSources.getByName(data.name).length) {
+      //     viewer.dataSources.add(data);
+      //     const entities = data.entities.values;
+      //     // console.error('entities', entities, viewer);
+      //     // // 设置样式
+      //     // data.style = new Cesium.Cesium3DTileStyle({
+      //     //   color: "color('red', 0.6)", // 设置  为红色
+      //     // });
+      //     // console.error('sample', sample.features);
+      //     // console.error(Cesium.Cartesian3.fromDegrees(data));
+      //     viewer.flyTo(data).then(() => {
+      //       const originGeojson = originalGeoJson(data);
+      //       const centroid = turf.centroid(originGeojson);
+      //       // radarCenter = Cesium.Cartesian3.fromDegrees(
+      //       //   centroid.geometry.coordinates[0],
+      //       //   centroid.geometry.coordinates[1]
+      //       // );
+      //       // flyTo(
+      //       //   [
+      //       //     centroid.geometry.coordinates[0],
+      //       //     centroid.geometry.coordinates[1],
+      //       //     20000,
+      //       //   ],
+      //       //   () => {
+      //       //     // const ellipsoidFadeEntity = new EllipsoidFadeEntity(
+      //       //     //   'reader-test',
+      //       //     //   centroid,
+      //       //     //   0,
+      //       //     //   Cesium.Color.BLUE,
+      //       //     //   1000
+      //       //     // );
+      //       //     // viewer.entities.add(ellipsoidFadeEntity.entity);
+      //       //     // const readerTest = viewer.entities.getById('reader-test');
+      //       //     // // console.error(readerTest);
+      //       //     // // console.error(viewer.entities);
+      //       //     // // console.error(centroid);
+      //       //     // // setTimeout(() => {
+      //       //     // //   viewer.entities.removeById('reader-test');
+      //       //     // // }, 10000)
+      //       //     // // viewer.camera.flyTo(viewer.entities)
+      //       //     // viewer.zoomTo(viewer.entities).then((res) => {
+      //       //     //   // console.error('完成 zoomTo');
+      //       //     // });
+      //       //   }
+      //       // );
+      //     });
+      //   }
+      // });
     }
   }
 );
