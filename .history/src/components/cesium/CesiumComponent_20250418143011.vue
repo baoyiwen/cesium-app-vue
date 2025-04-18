@@ -395,7 +395,7 @@ const addGeoJson = (url, options = {}, callback) => {
         if (turfPolygons.length === 0) return;
         const unionPolygon = safeUnion(turfPolygons);
         if (!unionPolygon) return; // 合并失败直接跳过
-        const centroid = turf.pointOnFeature(unionPolygon).geometry.coordinates;
+        const centroid = turf.centroid(unionPolygon).geometry.coordinates;
         let centerCartesian = Cesium.Cartesian3.fromDegrees(
           centroid[0],
           centroid[1]

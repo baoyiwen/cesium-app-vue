@@ -395,22 +395,23 @@ const addGeoJson = (url, options = {}, callback) => {
         if (turfPolygons.length === 0) return;
         const unionPolygon = safeUnion(turfPolygons);
         if (!unionPolygon) return; // 合并失败直接跳过
-        const centroid = turf.pointOnFeature(unionPolygon).geometry.coordinates;
+        const centroid = turf.centroid(unionPolygon).geometry.coordinates;
         let centerCartesian = Cesium.Cartesian3.fromDegrees(
           centroid[0],
           centroid[1]
         );
-        const featureProps = entities[0].properties;
-        // if (featureProps?.['centroid']) {
-        //   const fieldProp = featureProps['centroid'];
-        //   const center =
-        //     typeof fieldProp.getValue === 'function'
-        //       ? fieldProp.getValue(Cesium.JulianDate.now())
-        //       : fieldProp;
-        //   centerCartesian = Cesium.Cartesian3.fromDegrees(center[0], center[1]);
-        //   console.error(centerCartesian);
-        // }
 
+        if (featureProps?.['center']) {
+          const fieldProp = featureProps['center'];
+          centerCartesian =
+            typeof fieldProp.getValue === 'function'
+              ? fieldProp.getValue(Cesium.JulianDate.now())
+              : fieldProp;
+
+            console.error(centerCartesian);
+        }
+
+        const featureProps = entities[0].properties;
         let name = '未知区域';
         if (featureProps?.[props.labelField]) {
           const fieldProp = featureProps[props.labelField];
@@ -882,7 +883,7 @@ const forceInitialLoading = () => {
 // **销毁 Cesium Viewer 并释放内存**
 const destroyCesium = () => {
   if (viewer) {
-    // viewer.camera.changed.removeEventListener(updateMapLevel);
+    viewer.camera.changed.removeEventListener(updateMapLevel);
     if (performanceLogInterval) {
       clearInterval(performanceLogInterval);
       performanceLogInterval = null;

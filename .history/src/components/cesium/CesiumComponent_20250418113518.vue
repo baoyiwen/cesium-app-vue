@@ -393,24 +393,18 @@ const addGeoJson = (url, options = {}, callback) => {
         });
 
         if (turfPolygons.length === 0) return;
-        const unionPolygon = safeUnion(turfPolygons);
-        if (!unionPolygon) return; // 合并失败直接跳过
-        const centroid = turf.pointOnFeature(unionPolygon).geometry.coordinates;
-        let centerCartesian = Cesium.Cartesian3.fromDegrees(
+        console.error(turfPolygons.reduce((a, b) => console.error(a, b)), 'turfPolygons');
+        const unionPolygon =
+          turfPolygons.length === 1
+            ? turfPolygons[0]
+            : turfPolygons.reduce((a, b) => turf.union(a, b));
+        const centroid = turf.centroid(unionPolygon).geometry.coordinates;
+        const centerCartesian = Cesium.Cartesian3.fromDegrees(
           centroid[0],
           centroid[1]
         );
-        const featureProps = entities[0].properties;
-        // if (featureProps?.['centroid']) {
-        //   const fieldProp = featureProps['centroid'];
-        //   const center =
-        //     typeof fieldProp.getValue === 'function'
-        //       ? fieldProp.getValue(Cesium.JulianDate.now())
-        //       : fieldProp;
-        //   centerCartesian = Cesium.Cartesian3.fromDegrees(center[0], center[1]);
-        //   console.error(centerCartesian);
-        // }
 
+        const featureProps = entities[0].properties;
         let name = '未知区域';
         if (featureProps?.[props.labelField]) {
           const fieldProp = featureProps[props.labelField];
@@ -481,44 +475,6 @@ const addGeoJson = (url, options = {}, callback) => {
       console.error('加载 GeoJSON 数据失败:', err);
     });
 };
-
-function isValidPolygon(p) {
-  return (
-    p &&
-    p.type === 'Feature' &&
-    p.geometry &&
-    p.geometry.type === 'Polygon' &&
-    Array.isArray(p.geometry.coordinates) &&
-    p.geometry.coordinates.length > 0 &&
-    p.geometry.coordinates[0].length >= 4
-  );
-}
-
-function safeUnion(polygons) {
-  const validPolygons = polygons.filter(isValidPolygon);
-
-  if (validPolygons.length === 0) {
-    console.warn('🟡 没有可用的 polygon，跳过 union');
-    return null;
-  }
-
-  if (validPolygons.length === 1) {
-    return validPolygons[0];
-  }
-
-  // ✅ 用 for 循环 + try-catch 替代 reduce，更稳定
-  let result = validPolygons[0];
-
-  for (let i = 1; i < validPolygons.length; i++) {
-    try {
-      result = turf.union(result, validPolygons[i]);
-    } catch (e) {
-      console.warn('⚠️ turf.union 出错，跳过一个 polygon:', validPolygons[i]);
-    }
-  }
-
-  return result;
-}
 
 const loadGeojsonAsEntity = async (options) => {
   const {
@@ -882,7 +838,7 @@ const forceInitialLoading = () => {
 // **销毁 Cesium Viewer 并释放内存**
 const destroyCesium = () => {
   if (viewer) {
-    // viewer.camera.changed.removeEventListener(updateMapLevel);
+    viewer.camera.changed.removeEventListener(updateMapLevel);
     if (performanceLogInterval) {
       clearInterval(performanceLogInterval);
       performanceLogInterval = null;

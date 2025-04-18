@@ -395,12 +395,12 @@ const addGeoJson = (url, options = {}, callback) => {
         if (turfPolygons.length === 0) return;
         const unionPolygon = safeUnion(turfPolygons);
         if (!unionPolygon) return; // 合并失败直接跳过
-        const centroid = turf.pointOnFeature(unionPolygon).geometry.coordinates;
+        const centroid = turf.centroid(unionPolygon).geometry.coordinates;
         let centerCartesian = Cesium.Cartesian3.fromDegrees(
           centroid[0],
           centroid[1]
         );
-        const featureProps = entities[0].properties;
+        // const featureProps = entities[0].properties;
         // if (featureProps?.['centroid']) {
         //   const fieldProp = featureProps['centroid'];
         //   const center =
@@ -882,7 +882,7 @@ const forceInitialLoading = () => {
 // **销毁 Cesium Viewer 并释放内存**
 const destroyCesium = () => {
   if (viewer) {
-    // viewer.camera.changed.removeEventListener(updateMapLevel);
+    viewer.camera.changed.removeEventListener(updateMapLevel);
     if (performanceLogInterval) {
       clearInterval(performanceLogInterval);
       performanceLogInterval = null;
