@@ -1,6 +1,7 @@
 <template>
   <div class="content-root">
     <CesiumComponent
+      ref="cesiumContainer"
       :options="cesiumOptions"
       :performanceThresholds="{ maxDrawCalls: 800, minFrameRate: 20 }"
       @performanceLogged="handlePerformanceLog"
@@ -45,6 +46,7 @@ const cesiumOptions = ref({
   animation: false, // 隐藏动画控件
   timeline: false, // 隐藏时间轴
 });
+const cesiumContainer = ref(null);
 // 获取文件地址
 const getFiles = () => {
   const provinceURL = import.meta.glob(
@@ -161,9 +163,43 @@ const handleBottleneck = (bottleneck) => {
 const handleOptimization = (optimization) => {
   // console.error('Optimization Applied:', optimization);
 };
-
+// addGeoJson('/geojson/cq-map-data.json', {
+//   layerManager: layerStore,
+//   layerId: 'district-chongqing', // 唯一 ID
+//   clampToGround: true,
+//   stroke: '#fff', // 边框颜色
+//   strokeWidth: 2, // 边框宽度
+//   fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
+//   polyline: {
+//     width: 2,
+//     material: '#ff0000',
+//     clampToGround: true,
+//   },
+//   subLayers: {
+//     polygon: { id: 'cq-polygon', name: '重庆区划面' },
+//     label: { id: 'cq-label', name: '重庆名称标注' },
+//     polyline: { id: 'cq-line', name: '重庆边界线' },
+//   },
+// });
 const loadeds = (viewer) => {
-  console.error('Loaded Viewer:', viewer);
+  cesiumContainer.value.createGeojson({
+    url: `/geojson/cq-map-data.json`,
+    options: {
+      layerId: 'district-chongqing', // 唯一 ID
+      name: '重庆区域地图',
+      clampToGround: true,
+      stroke: '#fff', // 边框颜色
+      strokeWidth: 2, // 边框宽度
+      fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
+      polyline: {
+        width: 2,
+        material: '#ff0000',
+        clampToGround: true,
+      },
+    },
+  });
+  // console.error('CesiumContainer:', cesiumContainer.value.createGeojson);
+  // console.error('Loaded Viewer:', viewer);
 };
 </script>
 <style scoped lang="less">

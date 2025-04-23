@@ -1,5 +1,7 @@
 <template>
   <div class="cesium-container" ref="cesiumContainer"></div>
+  <!-- LayerControl Layers控制器 -->
+  <LayerControl />
   <!-- 加载进度条 -->
   <div v-if="state.loading" class="loading-overlay">
     Loading... {{ state.loadingProgress }}%
@@ -35,11 +37,17 @@ import {
   watch,
   getCurrentInstance,
   toRaw,
+  provide,
+  defineExpose,
 } from 'vue';
-import * as echarts from 'echarts';
-import { EllipsoidFadeEntity } from './Reader';
+// import * as echarts from 'echarts';
+// import { EllipsoidFadeEntity } from './Reader';
+import LayerControl from './LayerControl.vue';
+import { useGeoLayerManager } from './useGeoLayerManager';
 import { scaleLinear } from 'd3';
 import * as turf from '@turf/turf';
+import { GeoLayerManager } from '../../utils/GeoLayerManager';
+import { useLayerStore } from '../../store/layerStore';
 // import { resolveGeoJsonFiles } from '../../utils/cesium';
 // import { RadarScanComponent } from './RadarScanComponent';
 const instane = getCurrentInstance();
@@ -83,6 +91,8 @@ let viewer = null; // Cesium Viewer 实例
 let tileProgressListener = null; // 瓦片加载事件监听器引用
 let performanceLogInterval = null; // 性能日志记录定时器
 let radarPrimitive = null;
+let layerSystem = null;
+const layerStore = useLayerStore();
 
 const state = reactive({
   loading: true, // 是否正在加载
@@ -100,6 +110,50 @@ const state = reactive({
   scale: null, // 比例尺
   reverseScale: null, // 反向比例尺
   mode: 3, // 地图模式
+  /**
+   * Cesium的style.
+   * FILL: 填充标签文本，但不勾勒轮廓。
+   * OUTLINE: Outline the text of the label, but do not fill.
+   * FILE_AND_OUTLINE: Fill and outline the text of the label.
+   */
+  textStyleMap: {
+    FILL: Cesium.LabelStyle.FILL,
+    OUTLINE: Cesium.LabelStyle.OUTLINE,
+    FILE_AND_OUTLINE: Cesium.LabelStyle.FILL_AND_OUTLINE,
+  },
+  /**
+   * 文字的垂直排布
+   * CENTER: 原点位于 <code>BASELINE</code> 和 <code>TOP</code> 之间的垂直中心。
+   * BOTTOM: 原点位于对象的底部。
+   * BASELINE: 如果对象包含文本，则原点位于文本的基线，否则原点位于对象的底部。
+   * TOP: 原点位于对象的顶部。
+   *
+   */
+  textVerticalOriginMap: {
+    CENTER: Cesium.VerticalOrigin.CENTER,
+    BOTTOM: Cesium.VerticalOrigin.BOTTOM,
+    BASELINE: Cesium.VerticalOrigin.BASELINE,
+    TOP: Cesium.VerticalOrigin.TOP,
+  },
+  /**
+   * 指定高度相对于什么的属性
+   * NONE: 位置是绝对的。
+   * CLAMP_TO_GROUND: 位置与地形和 3D Tiles 紧密相关。
+   * RELATIVE_TO_GROUND: 位置高度是高于地形和 3D Tiles 的高度。
+   * CLAMP_TO_TERRAIN: 位置与地形紧密相关。
+   * RELATIVE_TO_TERRAIN: 位置高度是高于地形的高度。
+   * CLAMP_TO_3D_TILE: 位置与 3D Tiles 紧密相关。
+   * RELATIVE_TO_3D_TILE: 位置高度是高于 3D Tiles 的高度。
+   */
+  textHeightReferenceMap: {
+    NONE: Cesium.HeightReference.NONE,
+    CLAMP_TO_GROUND: Cesium.HeightReference.CLAMP_TO_GROUND,
+    RELATIVE_TO_GROUND: Cesium.HeightReference.RELATIVE_TO_GROUND,
+    CLAMP_TO_TERRAIN: Cesium.HeightReference.CLAMP_TO_TERRAIN,
+    RELATIVE_TO_TERRAIN: Cesium.HeightReference.RELATIVE_TO_TERRAIN,
+    CLAMP_TO_3D_TILE: Cesium.HeightReference.CLAMP_TO_3D_TILE,
+    RELATIVE_TO_3D_TILE: Cesium.HeightReference.RELATIVE_TO_3D_TILE,
+  },
 });
 
 // 初始化scale
@@ -179,7 +233,7 @@ const initCesium = async () => {
     // 配置Cesium的Token
     if (!props.token) {
       console.error(
-        'Missing Cesium Token! Please provide a valid access token.'
+        'Missing Cesium Token! Please provide a valid access token .'
       );
       return;
     } else {
@@ -209,30 +263,40 @@ const initCesium = async () => {
     // 监听瓦片加载进度
     tileProgressListener = monitorTileLoading();
     forceInitialLoading();
-
+    layerStore.init(viewer);
     // 性能监控
     monitorPerformance();
     window.map = viewer;
 
     emit('loaded', viewer); // 通知父组件 Viewer 加载完成
     initState();
-    addGeoJson('/geojson/cq-map-data.json', {
-      layerId: 'district-chongqing', // ✅ 唯一 ID
-      clampToGround: true,
-      stroke: '#fff', // 边框颜色
-      strokeWidth: 2, // 边框宽度
-      fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
-      polyline: {
-        width: 2,
-        material: '#ff0000',
-        clampToGround: true,
-      },
-    });
+
+    // const layerManager = new GeoLayerManager(viewer);
+    window.layerStore = layerStore;
+    window.layerManager = layerStore.manager;
+    // addGeoJson('/geojson/cq-map-data.json', {
+    //   layerManager: layerStore,
+    //   layerId: 'district-chongqing', // 唯一 ID
+    //   clampToGround: true,
+    //   stroke: '#fff', // 边框颜色
+    //   strokeWidth: 2, // 边框宽度
+    //   fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
+    //   polyline: {
+    //     width: 2,
+    //     material: '#ff0000',
+    //     clampToGround: true,
+    //   },
+    //   subLayers: {
+    //     polygon: { id: 'cq-polygon', name: '重庆区划面' },
+    //     label: { id: 'cq-label', name: '重庆名称标注' },
+    //     polyline: { id: 'cq-line', name: '重庆边界线' },
+    //   },
+    // });
 
     // const districtLayer = await loadGeojsonAsEntity({
     //   viewer,
     //   geojson: '/geojson/cq-map-data.json',
-    //   layerId: 'district-chongqing', // ✅ 唯一 ID
+    //   layerId: 'district-chongqing', // 唯一 ID
     //   polygon: {
     //     material: Cesium.Color.GREEN.withAlpha(0.4),
     //   },
@@ -292,7 +356,9 @@ const initCesium = async () => {
  */
 // 添加geojson数据
 const addGeoJson = (url, options = {}, callback) => {
-  const layerId = options.layerId || `geojson-${Date.now()}`; // 唯一标识
+  const layerId = options.layerId || `geojson-${Date.now()}`;
+  const store = options.layerManager; // 传入 layerStore（包含 viewer & manager）
+  const viewer = store.viewer;
 
   const props = {
     clampToGround: true,
@@ -304,16 +370,32 @@ const addGeoJson = (url, options = {}, callback) => {
       material: '#ff0000',
       clampToGround: true,
     },
+    label: {
+      font: '16px sans-serif',
+      fillColor: '#fff',
+      outlineColor: '#000',
+      outlineWidth: 2,
+      style: 'FILL_AND_OUTLINE',
+      verticalOrigin: 'BOTTOM',
+      heightReference: 'CLAMP_TO_GROUND',
+      disableDepthTestDistance: Number.POSITIVE_INFINITY,
+    },
     showPolyline: true,
     showLabel: true,
     labelField: 'name',
+    groupId: null,
+    name: layerId,
     ...options,
-    layerId,
   };
 
-  const addedEntities = [];
+  // 用于存放各类型实体
+  const addedEntities = {
+    polygon: [],
+    label: [],
+    polyline: [],
+  };
 
-  const processGroupedEntities = (dataSource, props) => {
+  const processGroupedEntities = (dataSource) => {
     const grouped = new Map();
 
     dataSource.entities.values.forEach((entity) => {
@@ -328,7 +410,7 @@ const addGeoJson = (url, options = {}, callback) => {
       grouped.get(key).push(entity);
     });
 
-    grouped.forEach((entities, key) => {
+    grouped.forEach((entities) => {
       const allPolygonPositions = [];
 
       entities.forEach((entity) => {
@@ -339,91 +421,79 @@ const addGeoJson = (url, options = {}, callback) => {
           const ring = hierarchy.positions;
           allPolygonPositions.push(ring);
 
-          // ✅ 添加 Polyline 边界线
           if (props.showPolyline) {
-            const polylineEntity = viewer.entities.add({
+            const polylineEntity = new Cesium.Entity({
               polyline: {
                 positions: ring,
                 width: props.polyline.width,
                 material: convertColor(props.polyline.material),
                 clampToGround: props.polyline.clampToGround,
               },
-              layerId: props.layerId,
+              layerId,
               _geojsonTag: true,
               _type: 'polyline',
             });
-            addedEntities.push(polylineEntity);
+            addedEntities.polyline.push(polylineEntity);
           }
         }
       });
 
-      // ✅ 合并所有 polygon 到 turf 中心点
-      if (props.showLabel) {
-        const turfPolygons = allPolygonPositions.map((ring) => {
-          const coords = ring.map((p) => {
-            const carto = Cesium.Cartographic.fromCartesian(p);
-            return [
-              Cesium.Math.toDegrees(carto.longitude),
-              Cesium.Math.toDegrees(carto.latitude),
-            ];
-          });
-          if (
-            coords.length > 0 &&
-            JSON.stringify(coords[0]) !==
-              JSON.stringify(coords[coords.length - 1])
-          ) {
-            coords.push(coords[0]);
-          }
-          return turf.polygon([coords]);
+      // Label
+      if (!props.showLabel || allPolygonPositions.length === 0) return;
+
+      const turfPolygons = allPolygonPositions.map((ring) => {
+        const coords = ring.map((p) => {
+          const c = Cesium.Cartographic.fromCartesian(p);
+          return [
+            Cesium.Math.toDegrees(c.longitude),
+            Cesium.Math.toDegrees(c.latitude),
+          ];
         });
-
-        if (turfPolygons.length === 0) return;
-        const unionPolygon = safeUnion(turfPolygons);
-        if (!unionPolygon) return; // 合并失败直接跳过
-        const centroid = turf.pointOnFeature(unionPolygon).geometry.coordinates;
-        let centerCartesian = Cesium.Cartesian3.fromDegrees(
-          centroid[0],
-          centroid[1]
-        );
-        const featureProps = entities[0].properties;
-        // if (featureProps?.['centroid']) {
-        //   const fieldProp = featureProps['centroid'];
-        //   const center =
-        //     typeof fieldProp.getValue === 'function'
-        //       ? fieldProp.getValue(Cesium.JulianDate.now())
-        //       : fieldProp;
-        //   centerCartesian = Cesium.Cartesian3.fromDegrees(center[0], center[1]);
-        //   console.error(centerCartesian);
-        // }
-
-        let name = '未知区域';
-        if (featureProps?.[props.labelField]) {
-          const fieldProp = featureProps[props.labelField];
-          name =
-            typeof fieldProp.getValue === 'function'
-              ? fieldProp.getValue(Cesium.JulianDate.now())
-              : fieldProp;
+        if (
+          coords.length > 0 &&
+          JSON.stringify(coords[0]) !== JSON.stringify(coords.at(-1))
+        ) {
+          coords.push(coords[0]);
         }
+        return turf.polygon([coords]);
+      });
 
-        const labelEntity = viewer.entities.add({
-          position: centerCartesian,
-          label: {
-            text: name,
-            font: '16px sans-serif',
-            fillColor: Cesium.Color.WHITE,
-            outlineColor: Cesium.Color.BLACK,
-            outlineWidth: 2,
-            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          },
-          layerId: props.layerId,
-          _geojsonTag: true,
-          _type: 'label',
-        });
-        addedEntities.push(labelEntity);
+      const unionPolygon = safeUnion(turfPolygons);
+      if (!unionPolygon) return;
+
+      const point = turf.centerOfMass(unionPolygon);
+      const [lon, lat] = point.geometry.coordinates;
+      const position = Cesium.Cartesian3.fromDegrees(lon, lat);
+
+      const featureProps = entities[0].properties;
+      let name = '未知区域';
+      if (featureProps?.[props.labelField]) {
+        const fieldProp = featureProps[props.labelField];
+        name =
+          typeof fieldProp.getValue === 'function'
+            ? fieldProp.getValue(Cesium.JulianDate.now())
+            : fieldProp;
       }
+
+      const labelEntity = new Cesium.Entity({
+        position,
+        label: {
+          text: name,
+          font: props.label.font,
+          fillColor: convertColor(props.label.fillColor),
+          outlineColor: convertColor(props.label.outlineColor),
+          outlineWidth: props.label.outlineWidth,
+          style: Cesium.LabelStyle[props.label.style],
+          verticalOrigin: Cesium.VerticalOrigin[props.label.verticalOrigin],
+          heightReference: Cesium.HeightReference[props.label.heightReference],
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        },
+        layerId,
+        _geojsonTag: true,
+        _type: 'label',
+      });
+
+      addedEntities.label.push(labelEntity);
     });
   };
 
@@ -436,30 +506,29 @@ const addGeoJson = (url, options = {}, callback) => {
     .then((dataSource) => {
       viewer.dataSources.add(dataSource);
 
-      // ✅ 处理 entity 分组、合并、统一绘制
-      processGroupedEntities(dataSource, props);
+      // polygon 直接收集
+      addedEntities.polygon = dataSource.entities.values;
 
-      // ✅ 镜头飞行
-      viewer
-        .flyTo(dataSource)
-        .then(() => callback?.())
-        .catch((err) => console.warn('飞行被中断 ❌', err));
+      // 拾取 label 和 polyline
+      processGroupedEntities(dataSource);
 
-      // ✅ 返回可管理对象
+      // 添加到 store（自动分类）
+      store.addLayer({
+        layerId,
+        name: props.name,
+        groupId: props.groupId,
+        type: 'geojson',
+        entitiesByType: addedEntities,
+      });
+
+      viewer.flyTo(dataSource).then(() => callback?.());
+
       return {
         layerId,
-        dataSource,
-        entities: addedEntities,
-        clear: () => {
-          addedEntities.forEach((e) => viewer.entities.remove(e));
-          viewer.dataSources.remove(dataSource, true);
-        },
-        getEntities: () =>
-          viewer.entities.values.filter((e) => e.layerId === layerId),
-        getByType: (type) =>
-          viewer.entities.values.filter(
-            (e) => e.layerId === layerId && e._type === type
-          ),
+        getEntities: () => Object.values(addedEntities).flat(),
+        remove: () => store.removeLayer(layerId),
+        show: () => store.toggleLayer(layerId, true),
+        hide: () => store.toggleLayer(layerId, false),
       };
     })
     .catch((err) => {
@@ -467,6 +536,18 @@ const addGeoJson = (url, options = {}, callback) => {
     });
 };
 
+const createGeojson = (data) => {
+  return addGeoJson(
+    data.url,
+    { ...data.options, layerManager: layerStore },
+    data.callback
+  );
+};
+
+/**
+ *
+ * @param
+ */
 function isValidPolygon(p) {
   return (
     p &&
@@ -504,147 +585,6 @@ function safeUnion(polygons) {
 
   return result;
 }
-
-const loadGeojsonAsEntity = async (options) => {
-  const {
-    viewer,
-    geojson,
-    flyTo = true,
-    layerId = `geojson-layer-${Date.now()}`, // ✅ 默认唯一标识
-    label = true,
-    polygon = {},
-    polyline = {},
-    onEntity,
-  } = options;
-
-  if (!viewer) throw new Error('请传入 Cesium.Viewer 实例');
-
-  const geoData =
-    typeof geojson === 'string'
-      ? await fetch(geojson).then((res) => res.json())
-      : geojson;
-
-  const flat = turf.flatten(geoData);
-  const addedEntities = [];
-
-  flat.features.forEach((feature, i) => {
-    const coords = feature.geometry.coordinates[0];
-    const positions = coords.map(([lon, lat]) =>
-      Cesium.Cartesian3.fromDegrees(lon, lat)
-    );
-
-    // ✅ 添加 Polygon
-    if (polygon !== false) {
-      const {
-        clampToGround = true,
-        material = Cesium.Color.BLUE.withAlpha(0.4),
-        height,
-        extrudedHeight,
-        outline = false,
-        outlineColor,
-      } = polygon;
-
-      const polygonEntity = viewer.entities.add({
-        polygon: {
-          hierarchy: new Cesium.PolygonHierarchy(positions),
-          material,
-          height,
-          extrudedHeight,
-          heightReference: clampToGround
-            ? Cesium.HeightReference.CLAMP_TO_GROUND
-            : Cesium.HeightReference.NONE,
-          outline,
-          outlineColor,
-        },
-        properties: feature.properties,
-        layerId, // ✅ 赋值唯一标识
-        _geojsonTag: true,
-        _type: 'polygon',
-      });
-
-      addedEntities.push(polygonEntity);
-      onEntity?.(polygonEntity, feature.properties);
-    }
-
-    // ✅ 添加 Polyline
-    if (polyline !== false) {
-      const {
-        width = 2,
-        material = Cesium.Color.RED,
-        clampToGround = true,
-      } = polyline;
-
-      const polylineEntity = viewer.entities.add({
-        polyline: {
-          positions,
-          width,
-          material,
-          clampToGround,
-        },
-        layerId, // ✅ 同样打标识
-        _geojsonTag: true,
-        _type: 'polyline',
-      });
-
-      addedEntities.push(polylineEntity);
-    }
-
-    // ✅ 添加 Label
-    if (label !== false) {
-      const { field = 'name', style = {} } =
-        typeof label === 'object' ? label : {};
-
-      const center = turf.centroid(feature).geometry.coordinates;
-      const centerCartesian = Cesium.Cartesian3.fromDegrees(
-        center[0],
-        center[1]
-      );
-      const name =
-        feature.properties?.[field] ?? feature.properties?.name ?? '未命名';
-
-      const labelEntity = viewer.entities.add({
-        position: centerCartesian,
-        label: {
-          text: name,
-          font: '16px sans-serif',
-          fillColor: Cesium.Color.WHITE,
-          outlineColor: Cesium.Color.BLACK,
-          outlineWidth: 2,
-          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          ...style,
-        },
-        layerId, // ✅ 标记归属
-        _geojsonTag: true,
-        _type: 'label',
-      });
-
-      addedEntities.push(labelEntity);
-    }
-  });
-
-  // ✅ 飞行定位
-  if (flyTo && addedEntities.length > 0) {
-    viewer.flyTo(addedEntities);
-  }
-
-  // ✅ 返回带管理能力的结果
-  return {
-    layerId,
-    entities: addedEntities,
-    clear: () => {
-      addedEntities.forEach((e) => viewer.entities.remove(e));
-    },
-    getEntities: () =>
-      viewer.entities.values.filter((e) => e.layerId === layerId),
-    getByType: (type) =>
-      viewer.entities.values.filter(
-        (e) => e.layerId === layerId && e._type === type
-      ),
-  };
-};
 
 // **性能监控与瓶颈点标记**
 const monitorPerformance = () => {
@@ -979,6 +919,15 @@ const getCurrentZoomLevel = (viewer) => {
     return getZoomLevel(viewer); // Columbus View
   }
 };
+
+defineExpose({
+  createGeojson,
+  flyTo,
+  changeCesiumModeBy3D,
+  changeCesiumModeBy2D,
+  changeCesiumMode,
+  reloadCesium,
+});
 </script>
 
 <style lang="less" scoped>
