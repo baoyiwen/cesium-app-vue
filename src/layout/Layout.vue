@@ -12,7 +12,6 @@
         ></Menu>
       </div>
       <div class="content-layout">
-        <CesiumModulePage />
         <div class="content-module">
           <keep-alive>
             <router-view />

@@ -1,301 +1,235 @@
 /*
  * @Author: baoyiwen 511530203@qq.com
- * @Date: 2025-04-22
- * @LastEditors: baoyiwen 511530203@qq.com
- * @FilePath: \cesium-app-vue\src\utils\GeoLayerManagement.js
- * @Description: 稳健型 GeoLayerManager，支持多类型实体（polygon、label、polyline）共存
+ * @FilePath: \cesium-app-vue\src\utils\GeoLayerManager.js
+ * @Description: GeoLayerManager - 稳健型图层管理类，支持类型分类、显隐控制、高亮、透明度、筛选等功能
  */
+
 import * as Cesium from 'cesium';
+import { convertColor } from './cesium';
 
 export class GeoLayerManager {
   constructor(viewer) {
     if (!viewer || !(viewer instanceof Cesium.Viewer)) {
       throw new Error('GeoLayerManager 需要传入 Cesium.Viewer 实例');
     }
+    this.types = ['polygon', 'polyline', 'label'];
     this.viewer = viewer;
 
-    /**
-     * 图层结构：
-     * Map<layerId, {
-     *   entities: {
-     *     polygon?: Cesium.Entity[],
-     *     label?: Cesium.Entity[],
-     *     polyline?: Cesium.Entity[]
-     *   }
-     * }>
-     */
-    this._polygonLayerMap = new Map();
-    this._polylineLayerMap = new Map();
-    this._labelLayerMap = new Map();
+    /** 内部类型映射表 */
+
+    this._typeMap = {};
+
+    this.types.forEach((d) => {
+      this._typeMap[d] = new Map();
+    });
+  }
+
+  // 🔒 内部方法：获取对应 Map
+  _getLayerMapByType(type) {
+    return this._typeMap[type];
+  }
+
+  // 🔒 内部方法：设置实体显示隐藏
+  _setLayerVisibility(id, type, visible) {
+    const layerMap = this._getLayerMapByType(type);
+    const entities = layerMap.get(id);
+    if (!entities) return;
+    entities.forEach((e) => (e.show = visible));
   }
 
   /**
    * 添加实体到某个 layerId
-   * @param {Object} config
-   * @param {string} config.id - 逻辑图层 ID（统一标识）
-   * @param {'polygon'|'label'|'polyline'} config.type - 实体类型
-   * @param {Cesium.Entity[]} config.entities - Cesium 实体数组
+   * @param {string} id
+   * @param {'polygon'|'label'|'polyline'} type
+   * @param {Cesium.Entity[]} entities
    */
   addLayer({ id, type, entities }) {
     if (!id || !type || !Array.isArray(entities) || entities.length === 0)
       return;
-    switch (type) {
-      case 'label':
-        this._labelLayerMap.set(id, entities);
-        break;
-      case 'polygon':
-        this._polygonLayerMap.set(id, entities);
-        break;
-      case 'polyline':
-        this._polylineLayerMap.set(id, entities);
-        break;
-    }
-    // // 获取旧数据或新建结构
-    // const existing = this._layerMap.get(id) || { entities: {} };
 
-    // 先添加实体到 Cesium
-    entities.forEach((e) => this.viewer.entities.add(e));
+    const map = this._getLayerMapByType(type);
+    if (!map) return;
 
-    // // 合并到对应类型
-    // existing.entities[type] = (existing.entities[type] || []).concat(entities);
-
-    // this._layerMap.set(id, existing);
-  }
-
-  addLabelLayer(id, entities) {
-    if (!id || !Array.isArray(entities) || entities.length === 0) return;
-    this._labelLayerMap.set(id, entities);
-    // 先添加实体到 Cesium
+    // 添加实体到 Viewer
     entities.forEach((e) => this.viewer.entities.add(e));
-  }
-  addPolygonLayer(id, entities) {
-    if (!id || !Array.isArray(entities) || entities.length === 0) return;
-    this._polygonLayerMap.set(id, entities);
-    // 先添加实体到 Cesium
-    entities.forEach((e) => this.viewer.entities.add(e));
-  }
-  addPolylineLayer(id, entities) {
-    if (!id || !Array.isArray(entities) || entities.length === 0) return;
-    this._polylineLayerMap.set(id, entities);
-    // 先添加实体到 Cesium
-    entities.forEach((e) => this.viewer.entities.add(e));
+    map.set(id, entities);
   }
 
   /**
-   * 显示某个图层的所有实体
+   * 显示整个图层（全部类型）
    */
   show(id) {
-    const labelLayer = this._labelLayerMap.get(id);
-    const polygonLayer = this._polygonLayerMap.get(id);
-    const polyline = this._polylineLayerMap.get(id);
-    if (labelLayer) {
-      labelLayer.forEach((entityList) => {
-        entityList.show = true;
-      });
-    }
-    if (polygonLayer) {
-      polygonLayer.forEach((entityList) => {
-        entityList.show = true;
-      });
-    }
-    if (polyline) {
-      polyline.forEach((entityList) => {
-        entityList.show = true;
-      });
-    }
+    this.types.forEach((type) => this._setLayerVisibility(id, type, true));
   }
 
-  showLabelLayer(id) {
-    const labelLayer = this._labelLayerMap.get(id);
-    if (labelLayer) {
-      labelLayer.forEach((entityList) => {
-        entityList.show = true;
-      });
-    }
-  }
-
-  showPolygonLayer(id) {
-    const polygonLayer = this._polygonLayerMap.get(id);
-    if (polygonLayer) {
-      polygonLayer.forEach((entityList) => {
-        entityList.show = true;
-      });
-    }
-  }
-
-  showPolylineLayer(id) {
-    const polyline = this._polylineLayerMap.get(id);
-    if (polyline) {
-      polyline.forEach((entityList) => {
-        entityList.show = true;
-      });
-    }
-  }
-
-  /**
-   * 隐藏某个图层的所有实体
-   */
   hide(id) {
-    const labelLayer = this._labelLayerMap.get(id);
-    const polygonLayer = this._polygonLayerMap.get(id);
-    const polyline = this._polylineLayerMap.get(id);
-    if (labelLayer) {
-      labelLayer.forEach((entityList) => {
-        entityList.show = false;
-      });
-    }
-    if (polygonLayer) {
-      polygonLayer.forEach((entityList) => {
-        entityList.show = false;
-      });
-    }
-    if (polyline) {
-      polyline.forEach((entityList) => {
-        entityList.show = false;
-      });
-    }
+    this.types.forEach((type) => this._setLayerVisibility(id, type, false));
   }
 
-  hideLabelLayer(id) {
-    const labelLayer = this._labelLayerMap.get(id);
-    if (labelLayer) {
-      labelLayer.forEach((entityList) => {
-        entityList.show = false;
-      });
-    }
+  showLayer(id, type) {
+    this._setLayerVisibility(id, type, true);
   }
 
-  hidePolygonLayer(id) {
-    const polygonLayer = this._polygonLayerMap.get(id);
-    if (polygonLayer) {
-      polygonLayer.forEach((entityList) => {
-        entityList.show = false;
-      });
-    }
-  }
-
-  hidePolylineLayer(id) {
-    const polyline = this._polylineLayerMap.get(id);
-    if (polyline) {
-      polyline.forEach((entityList) => {
-        entityList.show = false;
-      });
-    }
+  hideLayer(id, type) {
+    this._setLayerVisibility(id, type, false);
   }
 
   /**
-   * 移除某个图层的所有实体
+   * 删除图层
    */
   removeLayer(id) {
-    const labelLayer = this._labelLayerMap.get(id);
-    const polygonLayer = this._polygonLayerMap.get(id);
-    const polyline = this._polylineLayerMap.get(id);
-    if (labelLayer) {
-      labelLayer.forEach((entityList) => {
-        this.viewer.entities.remove(entityList);
-      });
-
-      this._labelLayerMap.delete(id);
-    }
-    if (polygonLayer) {
-      polygonLayer.forEach((entityList) => {
-        this.viewer.entities.remove(entityList);
-      });
-
-      this._polygonLayerMap.delete(id);
-    }
-    if (polyline) {
-      polyline.forEach((entityList) => {
-        this.viewer.entities.remove(entityList);
-      });
-
-      this._polylineLayerMap.delete(id);
-    }
-  }
-
-  removeLabelLayer(id) {
-    const labelLayer = this._labelLayerMap.get(id);
-    if (labelLayer) {
-      labelLayer.forEach((entityList) => {
-        this.viewer.entities.remove(entityList);
-      });
-      this._labelLayerMap.delete(id);
-    }
-  }
-
-  removePolygonLayer(id) {
-    const polygonLayer = this._polygonLayerMap.get(id);
-    if (polygonLayer) {
-      polygonLayer.forEach((entityList) => {
-        this.viewer.entities.remove(entityList);
-      });
-      this._polygonLayerMap.delete(id);
-    }
-  }
-
-  removePolylineLayer(id) {
-    const polyline = this._polylineLayerMap.get(id);
-    if (polyline) {
-      polyline.forEach((entityList) => {
-        this.viewer.entities.remove(entityList);
-      });
-      this._polylineLayerMap.delete(id);
-    }
+    this.types.forEach((type) => {
+      const map = this._getLayerMapByType(type);
+      const list = map.get(id);
+      if (list) {
+        list.forEach((e) => this.viewer.entities.remove(e));
+        map.delete(id);
+      }
+    });
   }
 
   /**
-   * 获取图层中的所有实体，或某类实体
+   * 获取某图层实体
    * @param {string} id
-   * @param {string} [type] - 可选类型筛选（polygon / label / polyline）
+   * @param {string} [type]
    */
   getEntities(id, type) {
-    const labelLayer = this._labelLayerMap.get(id);
-    const polygonLayer = this._polygonLayerMap.get(id);
-    const polyline = this._polylineLayerMap.get(id);
-    const layers = [];
-    if (labelLayer) {
-      layers = layers.concat(labelLayer);
+    if (type) {
+      const map = this._getLayerMapByType(type);
+      return map?.get(id) || [];
     }
-    if (polygonLayer) {
-      layers = layers.concat(polygonLayer);
-    }
-    if (polyline) {
-      layers = layers.concat(polyline);
-    }
+    const all = {};
+    this.types.forEach((type) => {
+      all[type] = this._typeMap[type]?.get(id) || [];
+    });
 
-    switch (type) {
-      case 'label':
-        return labelLayer;
-      case 'polygon':
-        return polygonLayer;
-      case 'polyline':
-        return polyline;
-      default:
-        return layers;
-    }
+    return all;
   }
 
   /**
-   * 飞行到图层
+   * 飞行到图层所有实体
    */
   flyTo(id) {
-    const entities = this.getEntities(id);
-    if (entities.length > 0) {
-      this.viewer.flyTo(entities);
-    }
+    const allEntities = this.types.map((type) => {
+      return this._typeMap[type]?.get(id) || [];
+    });
+    if (allEntities.length > 0) this.viewer.flyTo(allEntities);
   }
 
-  // /**
-  //  * 判断图层是否存在
-  //  */
-  // has(id) {
-  //   return this._layerMap.has(id);
-  // }
+  /**
+   * 设置透明度
+   */
+  setOpacity(id, type, alpha = 1.0) {
+    const list = this.getEntities(id, type);
+    list.forEach((entity) => {
+      if (entity.polygon && entity.polygon.material) {
+        const color = entity.polygon.material.color?.getValue?.(
+          Cesium.JulianDate.now()
+        );
+        if (color)
+          entity.polygon.material = Cesium.Color.fromAlpha(color, alpha);
+      }
 
-  // /**
-  //  * 获取全部 layerId
-  //  */
-  // getAllLayerIds() {
-  //   return [...this._layerMap.keys()];
-  // }
+      if (entity.polyline && entity.polyline.material) {
+        const color = Cesium.Color.clone(entity.polyline.material);
+        entity.polyline.material = Cesium.Color.fromAlpha(color, alpha);
+      }
+
+      if (entity.label && entity.label.fillColor) {
+        const color = entity.label.fillColor?.getValue?.(
+          Cesium.JulianDate.now()
+        );
+        if (color)
+          entity.label.fillColor = Cesium.Color.fromAlpha(color, alpha);
+      }
+    });
+  }
+
+  /**
+   * 高亮图层实体（临时换色）
+   */
+  highlight(id, highlightColor = 'rgba(255, 255, 0, 0.8)') {
+    highlightColor = convertColor(highlightColor);
+    const all = this.getEntities(id);
+    Object.values(all)
+      .flat()
+      .forEach((entity) => {
+        if (entity.polygon) {
+          entity._originalMaterial = entity.polygon.material;
+          entity.polygon.material = highlightColor;
+        }
+
+        if (entity.polyline) {
+          entity._originalMaterial = entity.polyline.material;
+          entity.polyline.material = highlightColor;
+        }
+
+        if (entity.label) {
+          entity._originalFill = entity.label.fillColor;
+          entity.label.fillColor = highlightColor;
+        }
+      });
+  }
+
+  /**
+   * 恢复原始颜色（取消高亮）
+   */
+  resetColor(id) {
+    const all = this.getEntities(id);
+    Object.values(all)
+      .flat()
+      .forEach((entity) => {
+        if (entity.polygon && entity._originalMaterial) {
+          entity.polygon.material = entity._originalMaterial;
+        }
+
+        if (entity.polyline && entity._originalMaterial) {
+          entity.polyline.material = entity._originalMaterial;
+        }
+
+        if (entity.label && entity._originalFill) {
+          entity.label.fillColor = entity._originalFill;
+        }
+      });
+  }
+
+  /**
+   * 筛选图层中部分实体显示
+   * @param {string} id
+   * @param {(entity: Cesium.Entity) => boolean} predicate
+   */
+  filter(id, predicate) {
+    const all = this.getEntities(id);
+    Object.values(all)
+      .flat()
+      .forEach((entity) => {
+        entity.show = !!predicate(entity);
+      });
+  }
+
+  /**
+   * 是否存在某个图层
+   */
+  has(id) {
+    let flag = false;
+    this.types.forEach((type) => {
+      if (this._typeMap[type]) {
+        flag = this._typeMap[type].get(id);
+      }
+    });
+    return flag;
+  }
+
+  /**
+   * 获取所有图层 ID
+   */
+  getAllLayerIds() {
+    const all = new Set();
+    Object.values(this._typeMap).forEach((map) => {
+      for (const id of map.keys()) {
+        all.add(id);
+      }
+    });
+    return [...all];
+  }
 }

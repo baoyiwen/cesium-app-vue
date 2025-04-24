@@ -38,7 +38,6 @@ import {
   getCurrentInstance,
   toRaw,
   provide,
-  defineExpose,
 } from 'vue';
 // import * as echarts from 'echarts';
 // import { EllipsoidFadeEntity } from './Reader';
