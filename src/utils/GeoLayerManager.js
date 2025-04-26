@@ -17,7 +17,7 @@ export class GeoLayerManager {
     this._typeMap = {};
   }
 
-  // 🔒 私有方法：根据类型动态获取对应 Map，如果不存在就初始化
+  // 私有方法：根据类型动态获取对应 Map，如果不存在就初始化
   _getLayerMapByType(type) {
     if (!this._typeMap[type]) {
       this._typeMap[type] = new Map();
@@ -25,7 +25,7 @@ export class GeoLayerManager {
     return this._typeMap[type];
   }
 
-  // 🔒 私有方法：统一控制某一层的显示隐藏
+  // 私有方法：统一控制某一层的显示隐藏
   _setLayerVisibility(id, type, visible) {
     const map = this._getLayerMapByType(type);
     const entities = map.get(id);
