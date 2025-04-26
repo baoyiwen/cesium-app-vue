@@ -1,9 +1,17 @@
+<!--
+ * @Author: baoyiwen 511530203@qq.com
+ * @Date: 2024-12-02 11:17:36
+ * @LastEditors: baoyiwen 511530203@qq.com
+ * @LastEditTime: 2025-04-26 12:40:07
+ * @FilePath: \cesium-app-vue\src\App.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
   <div id="app">
     <Layout />
     <Loading />
     <!-- 用于渲染路由页面 -->
-    <el-dialog
+    <!-- <el-dialog
       v-if="userStore.isSessionExpired"
       title="登录状态已过期"
       :visible.sync="userStore.isSessionExpired"
@@ -12,7 +20,7 @@
       <div style="text-align: right">
         <el-button type="primary" @click="logout">重新登录</el-button>
       </div>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 <script setup>

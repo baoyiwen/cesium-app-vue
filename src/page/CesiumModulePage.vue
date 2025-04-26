@@ -1,5 +1,5 @@
 <template>
-  <div class="content-root">
+  <div class="cesium-content-root">
     <CesiumComponent
       ref="cesiumContainer"
       :options="cesiumOptions"
@@ -203,7 +203,7 @@ const loadeds = (viewer) => {
 };
 </script>
 <style scoped lang="less">
-.content-root {
+.cesium-content-root {
   width: 100%;
   height: 100%;
   padding: 0;

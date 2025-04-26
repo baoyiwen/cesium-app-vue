@@ -27,16 +27,16 @@ import {
   KmlDataSource,
   Cartographic,
   CzmlDataSource,
-} from "cesium";
-import { onMounted, onUnmounted } from "vue";
+} from 'cesium';
+import { onMounted, onUnmounted } from 'vue';
 // import { checkPolygons, fixPolygons } from "./common";
 const initCesium = async () => {
   // const ctileset = await new Cesium3DTileset({
   //   url: IonResource.fromAssetId(96188)
   // })
-  Ion.defaultAccessToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0N2YxOWQ0NC1mYTkyLTQzYTEtOWU0Ny1jOTQyOTE2ZDFlOTMiLCJpZCI6MjMyMTc3LCJpYXQiOjE3MjI4NDUxNzN9.UijwFTk4emxDLQHMXFaA2-36v3c1kKVV-EVs0OGO54o`;
+  Ion.defaultAccessToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NzFhYjc5My02YjcyLTRiODYtYTNmZS02ZjcxMWJkMjNiMTMiLCJpZCI6MjMyMTc3LCJpYXQiOjE3Mzg4MDgxMjB9.HLg6mO34PUne2nzscnhtJK7gnzbpUmsqbjU6NKjyBME`;
   const custom = new ArcGisMapServerImageryProvider({
-    url: "services.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer",
+    url: 'services.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer',
   });
   const terrainProvider = await createWorldTerrainAsync({
     /**
@@ -48,7 +48,7 @@ const initCesium = async () => {
      */
     requestVertexNormals: true,
   });
-  const viewer = (window.viewer = new Viewer("cesiumContainer", {
+  const viewer = (window.viewer = new Viewer('cesiumContainer', {
     /**
      * 是否开启地图底图选择器开关。
      */
@@ -83,19 +83,19 @@ const initCesium = async () => {
     color: {
       conditions: [
         [
-          "${height} === null || ${height} === undefined || Number(${height}) === 0",
+          '${height} === null || ${height} === undefined || Number(${height}) === 0',
           'color("#BBDEFB", 1)',
         ],
-        ["Number(${height}) >= 300.0", "color('#311B92', 1)"],
-        ["Number(${height}) >= 250.0", "color('#4527A0', 1)"],
-        ["Number(${height}) >= 200.0", "color('#512DA8', 1)"],
-        ["Number(${height}) >= 150.0", "color('#5E35B1', 1)"],
-        ["Number(${height}) >= 100.0", "color('#673AB7', 1)"],
-        ["Number(${height}) >= 50.0", "color('#7E57C2', 1)"],
-        ["Number(${height}) >= 25.0", "color('#9575CD', 1)"],
-        ["Number(${height}) >= 10.0", "color('#B39DDB', 1)"],
-        ["Number(${height}) >= 5.0", "color('#D1C4E9', 1)"],
-        ["true", "color('#EDE7F6', 1)"],
+        ['Number(${height}) >= 300.0', "color('#311B92', 1)"],
+        ['Number(${height}) >= 250.0', "color('#4527A0', 1)"],
+        ['Number(${height}) >= 200.0', "color('#512DA8', 1)"],
+        ['Number(${height}) >= 150.0', "color('#5E35B1', 1)"],
+        ['Number(${height}) >= 100.0', "color('#673AB7', 1)"],
+        ['Number(${height}) >= 50.0', "color('#7E57C2', 1)"],
+        ['Number(${height}) >= 25.0', "color('#9575CD', 1)"],
+        ['Number(${height}) >= 10.0', "color('#B39DDB', 1)"],
+        ['Number(${height}) >= 5.0', "color('#D1C4E9', 1)"],
+        ['true', "color('#EDE7F6', 1)"],
       ],
     },
     meta: {
@@ -117,7 +117,7 @@ const initCesium = async () => {
    * Geojson 数据使用。
    */
   const geojsonDataSource = await GeoJsonDataSource.load(
-    "/geojson/NYC.geojson",
+    '/geojson/NYC.geojson',
     {
       clampToGround: true, // 确保多边形贴地
     }
@@ -167,7 +167,7 @@ const initCesium = async () => {
   /**
    * 加载KML数据文件, 文件存在问题，需要后续修改文件。
    */
-  KmlDataSource.load("/kml/facilities.kml", {
+  KmlDataSource.load('/kml/facilities.kml', {
     camera: viewer.scene.camera,
     canvas: viewer.scene.canvas,
     clampToGround: true,
@@ -180,9 +180,9 @@ const initCesium = async () => {
       if (!defined(ke.billboard)) {
         ke.billboard = {};
       }
-      ke.label = null
+      ke.label = null;
       ke.billboard.verticalOrigin = VerticalOrigin.BOTTOM;
-      ke.billboard.image = "/kml/images/local.svg";
+      ke.billboard.image = '/kml/images/local.svg';
       // ke.label = undefined;
       // 添加显示距离条件
       ke.billboard.distanceDisplayCondition = new DistanceDisplayCondition(
@@ -230,7 +230,7 @@ const checkPolygons = (dataSource) => {
       if (isClockwise) {
         errors.push({
           entity: entity.id,
-          error: "Polygon exterior is clockwise",
+          error: 'Polygon exterior is clockwise',
         });
       }
     }
@@ -248,7 +248,7 @@ const fixPolygons = (dataSource) => {
       let coordinates = hierarchy.getValue(JulianDate.now()).positions;
 
       // 检查坐标是否为对象，并且包含 positions 属性
-      if (typeof coordinates === "object" && coordinates.positions) {
+      if (typeof coordinates === 'object' && coordinates.positions) {
         coordinates = coordinates.positions;
       }
 
@@ -315,10 +315,10 @@ const destroyCesiumViewer = () => {
     gl.canvas.width = 1;
     gl.canvas.height = 1;
     viewer.destroy(); // 销毁Viewer实例
-    gl.getExtension("WEBGL_lose_context").loseContext();
+    gl.getExtension('WEBGL_lose_context').loseContext();
     gl = null;
     window.viewer = null;
-    console.log("cesium销毁");
+    console.log('cesium销毁');
   }
 };
 

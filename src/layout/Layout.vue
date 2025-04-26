@@ -12,11 +12,9 @@
         ></Menu>
       </div>
       <div class="content-layout">
-        <div class="content-module">
-          <keep-alive>
-            <router-view />
-          </keep-alive>
-        </div>
+        <keep-alive>
+          <router-view />
+        </keep-alive>
       </div>
     </div>
     <div class="footer">
@@ -87,15 +85,15 @@ watch(
       flex: 1;
       height: 100%;
       position: relative;
-      .content-module {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        pointer-events: none;
-        // background-color: aqua;
-      }
+      // .content-module {
+      //   position: absolute;
+      //   top: 0;
+      //   left: 0;
+      //   right: 0;
+      //   bottom: 0;
+      //   pointer-events: none;
+      //   // background-color: aqua;
+      // }
     }
   }
   .footer {
