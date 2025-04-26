@@ -27,6 +27,7 @@ export const useLayerStore = defineStore('layer', {
     createGroup({ id, name, zIndex = 0 }) {
       if (this.groups.find((g) => g.id === id)) return;
       this.groups.push({ id, name, zIndex, layers: [] });
+      return id;
     },
 
     /** 添加逻辑图层 */
@@ -120,6 +121,15 @@ export const useLayerStore = defineStore('layer', {
         .filter(Boolean)
         .flat();
       if (allEntities.length) this.viewer.flyTo(allEntities);
+    },
+    setOpacity(layerId, type, alpha) {
+      this.manager.setOpacity(layerId, type, alpha);
+    },
+    highlight(id) {
+      this.manager.highlight(id);
+    },
+    resetColor(id) {
+      this.manager.resetColor(id);
     },
   },
 });

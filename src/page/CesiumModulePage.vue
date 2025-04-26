@@ -182,11 +182,17 @@ const handleOptimization = (optimization) => {
 //   },
 // });
 const loadeds = (viewer) => {
+  const groupId = cesiumContainer.value.createGroup({
+    id: 'cq-polygon-group',
+    zIndex: 1,
+    name: '重庆区域规划图',
+  });
   cesiumContainer.value.createGeojson({
     url: `/geojson/cq-map-data.json`,
     options: {
       layerId: 'district-chongqing', // 唯一 ID
-      name: '重庆区域地图',
+      name: '重庆区域地图', 
+      groupId: groupId,
       clampToGround: true,
       stroke: '#fff', // 边框颜色
       strokeWidth: 2, // 边框宽度

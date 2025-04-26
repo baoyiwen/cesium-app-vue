@@ -27,7 +27,8 @@
     "vue-animation-number": "^2.0.1",
     "vue-i18n": "^10.0.4",
     "vue-lazyload": "^3.0.0",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "vuedraggable": "^2.24.3"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",

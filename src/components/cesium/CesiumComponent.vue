@@ -2,6 +2,7 @@
   <div class="cesium-container" ref="cesiumContainer"></div>
   <!-- LayerControl Layers控制器 -->
   <LayerControl />
+  <!-- <CesiumLayerPanelPro /> -->
   <!-- 加载进度条 -->
   <div v-if="state.loading" class="loading-overlay">
     Loading... {{ state.loadingProgress }}%
@@ -47,6 +48,7 @@ import { scaleLinear } from 'd3';
 import * as turf from '@turf/turf';
 import { GeoLayerManager } from '../../utils/GeoLayerManager';
 import { useLayerStore } from '../../store/layerStore';
+import CesiumLayerPanelPro from './CesiumLayerPanelPro.vue';
 // import { resolveGeoJsonFiles } from '../../utils/cesium';
 // import { RadarScanComponent } from './RadarScanComponent';
 const instane = getCurrentInstance();
@@ -273,41 +275,6 @@ const initCesium = async () => {
     // const layerManager = new GeoLayerManager(viewer);
     window.layerStore = layerStore;
     window.layerManager = layerStore.manager;
-    // addGeoJson('/geojson/cq-map-data.json', {
-    //   layerManager: layerStore,
-    //   layerId: 'district-chongqing', // 唯一 ID
-    //   clampToGround: true,
-    //   stroke: '#fff', // 边框颜色
-    //   strokeWidth: 2, // 边框宽度
-    //   fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
-    //   polyline: {
-    //     width: 2,
-    //     material: '#ff0000',
-    //     clampToGround: true,
-    //   },
-    //   subLayers: {
-    //     polygon: { id: 'cq-polygon', name: '重庆区划面' },
-    //     label: { id: 'cq-label', name: '重庆名称标注' },
-    //     polyline: { id: 'cq-line', name: '重庆边界线' },
-    //   },
-    // });
-
-    // const districtLayer = await loadGeojsonAsEntity({
-    //   viewer,
-    //   geojson: '/geojson/cq-map-data.json',
-    //   layerId: 'district-chongqing', // 唯一 ID
-    //   polygon: {
-    //     material: Cesium.Color.GREEN.withAlpha(0.4),
-    //   },
-    //   polyline: {
-    //     width: 2,
-    //     material: Cesium.Color.BLACK,
-    //   },
-    //   label: {
-    //     field: 'name',
-    //   },
-    // });
-    // console.error(districtLayer);
 
     // viewer.screenSpaceEventHandler.setInputAction((clickEvent) => {
     //   const pickedPosition = viewer.camera.pickEllipsoid(
@@ -541,6 +508,10 @@ const createGeojson = (data) => {
     { ...data.options, layerManager: layerStore },
     data.callback
   );
+};
+
+const createGroup = (groudData) => {
+  return layerStore.createGroup(groudData);
 };
 
 /**
@@ -926,6 +897,7 @@ defineExpose({
   changeCesiumModeBy2D,
   changeCesiumMode,
   reloadCesium,
+  createGroup,
 });
 </script>
 
