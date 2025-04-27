@@ -4,16 +4,19 @@
  */
 
 import { defineStore } from 'pinia';
-import { GeoLayerManager } from '../utils/GeoLayerManager';
+import { GeoLayerManager, LayerEventDispatcher } from '../utils';
+import * as Cesium from 'cesium';
 
 export const useLayerStore = defineStore('layer', {
   state: () => ({
     viewer: null,
     manager: null, // GeoLayerManager 实例
+    interactionManager: null, // LayerInteractionManager 实例
 
     entityLayers: {}, // { type: [{ layerId, entities }] }
     layers: [], // [{ id, name, groupId, entityTypes: [] }]
     groups: [], // [{ id, name, zIndex, layers: [] }]
+    selectedEntities: [], // 多选中的实体列表
   }),
 
   actions: {
@@ -21,6 +24,46 @@ export const useLayerStore = defineStore('layer', {
     init(viewer) {
       this.viewer = viewer;
       this.manager = new GeoLayerManager(viewer);
+      this.interactionManager = new LayerEventDispatcher(viewer);
+    },
+
+    setSelectedEntities(entities) {
+      this.selectedEntities = entities;
+    },
+
+    clearSelectedEntities() {
+      this.selectedEntities = [];
+    },
+
+    highlightSelectedEntities() {
+      this.selectedEntities.forEach((e) => {
+        if (e.polygon) {
+          e.polygon.material = Cesium.Color.YELLOW.withAlpha(0.8);
+        } else if (e.label) {
+          e.label.fillColor = Cesium.Color.YELLOW;
+        }
+      });
+    },
+
+    removeSelectedEntities() {
+      this.selectedEntities.forEach((e) => {
+        this.manager.viewer.entities.remove(e);
+      });
+      this.clearSelectedEntities();
+    },
+
+    flyToSelectedEntities() {
+      if (this.selectedEntities.length) {
+        this.manager.viewer.flyTo(this.selectedEntities);
+      }
+    },
+
+    bindLayerClick(layerId, callback) {
+      this.interactionManager?.onClick(layerId, callback);
+    },
+
+    unbindLayerClick(layerId) {
+      this.interactionManager?.offClick(layerId);
     },
 
     /** 创建分组 */
@@ -130,6 +173,13 @@ export const useLayerStore = defineStore('layer', {
     },
     resetColor(id) {
       this.manager.resetColor(id);
+    },
+
+    /**
+     * 销毁所有事件
+     */
+    destroy() {
+      this.interactionManager.destroy();
     },
   },
 });

@@ -46,7 +46,7 @@ import LayerControl from './LayerControl.vue';
 import { useGeoLayerManager } from './useGeoLayerManager';
 import { scaleLinear } from 'd3';
 import * as turf from '@turf/turf';
-import { GeoLayerManager } from '../../utils/GeoLayerManager';
+import { GeoLayerManager } from '../../utils';
 import { useLayerStore } from '../../store/layerStore';
 import CesiumLayerPanelPro from './CesiumLayerPanelPro.vue';
 // import { resolveGeoJsonFiles } from '../../utils/cesium';
@@ -226,9 +226,10 @@ const initCesium = async () => {
          * 指示客户端是否应从服务器请求其他照明信息（如果有）的标志。
          */
         requestVertexNormals: false,
-      }).then((data) => {
-        console.error(data);
       });
+      // .then((data) => {
+      //   console.error(data);
+      // });
     }
     window.terrain = terrainProvider;
     // 配置Cesium的Token
@@ -514,6 +515,10 @@ const createGroup = (groudData) => {
   return layerStore.createGroup(groudData);
 };
 
+const onListener = (type, id, callback) => {
+  layerStore.interactionManager.on(type, id, callback);
+};
+
 /**
  *
  * @param
@@ -534,7 +539,7 @@ function safeUnion(polygons) {
   const validPolygons = polygons.filter(isValidPolygon);
 
   if (validPolygons.length === 0) {
-    console.warn('🟡 没有可用的 polygon，跳过 union');
+    console.warn('没有可用的 polygon，跳过 union');
     return null;
   }
 
@@ -542,14 +547,14 @@ function safeUnion(polygons) {
     return validPolygons[0];
   }
 
-  // ✅ 用 for 循环 + try-catch 替代 reduce，更稳定
+  // 用 for 循环 + try-catch 替代 reduce，更稳定
   let result = validPolygons[0];
 
   for (let i = 1; i < validPolygons.length; i++) {
     try {
       result = turf.union(result, validPolygons[i]);
     } catch (e) {
-      console.warn('⚠️ turf.union 出错，跳过一个 polygon:', validPolygons[i]);
+      console.warn('turf.union 出错，跳过一个 polygon:', validPolygons[i]);
     }
   }
 
@@ -898,6 +903,7 @@ defineExpose({
   changeCesiumMode,
   reloadCesium,
   createGroup,
+  onListener,
 });
 </script>
 

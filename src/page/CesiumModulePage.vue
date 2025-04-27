@@ -4,6 +4,7 @@
       ref="cesiumContainer"
       :options="cesiumOptions"
       :performanceThresholds="{ maxDrawCalls: 800, minFrameRate: 20 }"
+      :isOpenTerrain="state.isOpenTerrain"
       @performanceLogged="handlePerformanceLog"
       @bottleneckDetected="handleBottleneck"
       @optimizationApplied="handleOptimization"
@@ -17,8 +18,12 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import CesiumComponent from '../components/cesium/CesiumComponent.vue';
+import { useLayerStore } from '../store/layerStore.js';
+import { BoxSelectionHelper } from '../utils/BoxSelectionHelper.js';
+const layerStore = useLayerStore();
 const state = reactive({
   cesiumToken: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NzFhYjc5My02YjcyLTRiODYtYTNmZS02ZjcxMWJkMjNiMTMiLCJpZCI6MjMyMTc3LCJpYXQiOjE3Mzg4MDgxMjB9.HLg6mO34PUne2nzscnhtJK7gnzbpUmsqbjU6NKjyBME`,
+  isOpenTerrain: false,
 });
 const cesiumOptions = ref({
   /**
@@ -79,6 +84,11 @@ const getFiles = () => {
 
   return filesObject;
 };
+let boxSelection = null;
+
+// const state = reactive({
+//   isOpenTerrain: true,
+// });
 
 const dataFiles = getFiles();
 const levelDatas = ref([
@@ -182,6 +192,7 @@ const handleOptimization = (optimization) => {
 //   },
 // });
 const loadeds = (viewer) => {
+  boxSelection = new BoxSelectionHelper(viewer);
   const groupId = cesiumContainer.value.createGroup({
     id: 'cq-polygon-group',
     zIndex: 1,
@@ -191,7 +202,7 @@ const loadeds = (viewer) => {
     url: `/geojson/cq-map-data.json`,
     options: {
       layerId: 'district-chongqing', // 唯一 ID
-      name: '重庆区域地图', 
+      name: '重庆区域地图',
       groupId: groupId,
       clampToGround: true,
       stroke: '#fff', // 边框颜色
@@ -204,9 +215,57 @@ const loadeds = (viewer) => {
       },
     },
   });
+  cesiumContainer.value.onListener(
+    'click',
+    'district-chongqing',
+    (entity, movement, multiSelect) => {
+      // layerStore.manager.highlight(entity.layerId);
+      console.error('点击实体', entity, movement, multiSelect);
+    }
+  );
+  // 框选结束，拿到实体
+  boxSelection.onBoxSelect((entities) => {
+    layerStore.setSelectedEntities(entities);
+    console.log('框选到实体：', entities);
+
+    // 可直接高亮
+    layerStore.highlightSelectedEntities();
+  });
+  window.addEventListener('keydown', (e) => {
+    console.error(e);
+    if (e.code === 'Space') {
+      startBoxSelection();
+    }
+    // console.error(e);
+  });
+
+  window.addEventListener('keyup', (e) => {
+    if (e.code === 'Space') {
+      stopBoxSelection();
+    }
+  });
+  // cesiumContainer.value.onListener(
+  //   'hover',
+  //   'district-chongqing',
+  //   (entity, movement) => {
+  //     // layerStore.manager.highlight(entity.layerId);
+  //     console.error('悬停实体', entity, movement);
+  //     entity.label.scale = 1.5; // 举例，放大 hover 上去的 label
+  //   }
+  // );
   // console.error('CesiumContainer:', cesiumContainer.value.createGeojson);
   // console.error('Loaded Viewer:', viewer);
 };
+
+// 点击按钮开启绘制
+function startBoxSelection() {
+  boxSelection && boxSelection.openDraw();
+}
+
+// 点击按钮关闭绘制
+function stopBoxSelection() {
+  boxSelection && boxSelection.closeDraw();
+}
 </script>
 <style scoped lang="less">
 .cesium-content-root {
