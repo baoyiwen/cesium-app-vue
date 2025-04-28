@@ -12,3 +12,5 @@ export * from './LayerEventDispatcher';
 export * from './layerExportHelper';
 export * from './request';
 export * from './BoxSelectionHelper';
+export * from './PulseScanMaterial';
+export * from './MaterialManager';

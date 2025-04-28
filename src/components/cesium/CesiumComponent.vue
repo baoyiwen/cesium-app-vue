@@ -474,7 +474,11 @@ const addGeoJson = (url, options = {}, callback) => {
       viewer.dataSources.add(dataSource);
 
       // polygon 直接收集
-      addedEntities.polygon = dataSource.entities.values;
+      addedEntities.polygon = dataSource.entities.values.map((em) => {
+        em.__type = 'polygon';
+        em.layerId = layerId;
+        return em;
+      });
 
       // 拾取 label 和 polyline
       processGroupedEntities(dataSource);

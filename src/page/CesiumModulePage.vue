@@ -223,16 +223,17 @@ const loadeds = (viewer) => {
       console.error('点击实体', entity, movement, multiSelect);
     }
   );
+
+  boxSelection.setLayerFilter('district-chongqing');
   // 框选结束，拿到实体
   boxSelection.onBoxSelect((entities) => {
     layerStore.setSelectedEntities(entities);
-    console.log('框选到实体：', entities);
+    // console.log('框选到实体：', entities);
 
     // 可直接高亮
     layerStore.highlightSelectedEntities();
   });
   window.addEventListener('keydown', (e) => {
-    console.error(e);
     if (e.code === 'Space') {
       startBoxSelection();
     }

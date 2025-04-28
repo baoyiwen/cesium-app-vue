@@ -4,7 +4,12 @@
  */
 
 import { defineStore } from 'pinia';
-import { GeoLayerManager, LayerEventDispatcher } from '../utils';
+import {
+  GeoLayerManager,
+  LayerEventDispatcher,
+  MaterialManager,
+  PulseScanMaterialFabric,
+} from '../utils';
 import * as Cesium from 'cesium';
 
 export const useLayerStore = defineStore('layer', {
@@ -12,6 +17,7 @@ export const useLayerStore = defineStore('layer', {
     viewer: null,
     manager: null, // GeoLayerManager 实例
     interactionManager: null, // LayerInteractionManager 实例
+    materialManager: null,
 
     entityLayers: {}, // { type: [{ layerId, entities }] }
     layers: [], // [{ id, name, groupId, entityTypes: [] }]
@@ -25,6 +31,15 @@ export const useLayerStore = defineStore('layer', {
       this.viewer = viewer;
       this.manager = new GeoLayerManager(viewer);
       this.interactionManager = new LayerEventDispatcher(viewer);
+      this.materialManager = new MaterialManager();
+      this.initMateria();
+    },
+
+    initMateria() {
+      this.materialManager.registerMaterial(
+        'PulseScanMaterial',
+        PulseScanMaterialFabric
+      );
     },
 
     setSelectedEntities(entities) {
@@ -35,15 +50,111 @@ export const useLayerStore = defineStore('layer', {
       this.selectedEntities = [];
     },
 
+    /** 高亮选中实体 + 动态呼吸动画 */
     highlightSelectedEntities() {
       this.selectedEntities.forEach((e) => {
+        const now = Cesium.JulianDate.now();
+
+        // Polygon 呼吸效果
+        // 记得先注册自定义材质
         if (e.polygon) {
-          e.polygon.material = Cesium.Color.YELLOW.withAlpha(0.8);
-        } else if (e.label) {
-          e.label.fillColor = Cesium.Color.YELLOW;
+          if (!e._originMaterial) {
+            e._originMaterial = e.polygon.material;
+          }
+          const startTime = Date.now();
+          this.materialManager.applyMaterial(e, 'PulseScanMaterial', {
+            color: '#a2b3ff88',
+            speed: 2.0,
+            count: 3.0,
+            gradient: 0.05,
+          });
+          // e.polygon.material = new Cesium.Material({
+          //   fabric: {
+          //     type: 'PulseScanMaterial',
+          //     uniforms: {
+          //       color: Cesium.Color.YELLOW,
+          //       speed: 2.0,
+          //       count: 3.0,
+          //       gradient: 0.05,
+          //     },
+          //   },
+          // });
+        }
+
+        // ✅ Polyline 流光效果
+        if (e.polyline) {
+          if (!e._originMaterial) {
+            e._originMaterial = e.polyline.material;
+          }
+
+          e.polyline.material = new Cesium.PolylineGlowMaterialProperty({
+            glowPower: 0.2,
+            taperPower: 0.5,
+            color: Cesium.Color.YELLOW.withAlpha(0.8),
+          });
+        }
+
+        // ✅ Label 呼吸发光
+        if (e.label) {
+          if (!e._originFillColor) {
+            e._originFillColor = e.label.fillColor;
+            e._originOutlineColor = e.label.outlineColor;
+          }
+          e.label.fillColor = new Cesium.CallbackProperty(() => {
+            const t = (Date.now() % 3000) / 3000;
+            const alpha = 0.5 + 0.5 * Math.sin(t * Math.PI * 2);
+            return Cesium.Color.YELLOW.withAlpha(alpha);
+          }, false);
+          e.label.outlineColor = Cesium.Color.RED;
+        }
+
+        // ✅ Point 闪烁放大（如果是点）
+        if (e.point) {
+          if (!e._originColor) {
+            e._originColor = e.point.color;
+          }
+          e.point.color = new Cesium.CallbackProperty(() => {
+            const t = (Date.now() % 1500) / 1500;
+            const alpha = 0.6 + 0.4 * Math.sin(t * Math.PI * 2);
+            return Cesium.Color.YELLOW.withAlpha(alpha);
+          }, false);
         }
       });
     },
+
+    /** 恢复高亮，重置呼吸动画效果 */
+    resetSelectedEntitiesHighlight() {
+      this.selectedEntities.forEach((e) => {
+        if (e.polygon && e._originMaterial) {
+          e.polygon.material = e._originMaterial;
+          delete e._originMaterial;
+        }
+        if (e.polyline && e._originMaterial) {
+          e.polyline.material = e._originMaterial;
+          delete e._originMaterial;
+        }
+        if (e.label && e._originFillColor) {
+          e.label.fillColor = e._originFillColor;
+          e.label.outlineColor = e._originOutlineColor;
+          delete e._originFillColor;
+          delete e._originOutlineColor;
+        }
+        if (e.point && e._originColor) {
+          e.point.color = e._originColor;
+          delete e._originColor;
+        }
+      });
+    },
+
+    // highlightSelectedEntities() {
+    //   this.selectedEntities.forEach((e) => {
+    //     if (e.polygon) {
+    //       e.polygon.material = Cesium.Color.YELLOW.withAlpha(0.8);
+    //     } else if (e.label) {
+    //       e.label.fillColor = Cesium.Color.YELLOW;
+    //     }
+    //   });
+    // },
 
     removeSelectedEntities() {
       this.selectedEntities.forEach((e) => {

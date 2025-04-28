@@ -11,57 +11,51 @@ export class BoxSelectionHelper {
     this.controller = viewer.scene.screenSpaceCameraController;
     this.handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
 
-    this.isDrawing = false; // 是否允许绘制（外部控制）
-    this.isMouseDown = false; // 是否鼠标按下
+    this.isDrawing = false;
+    this.isMouseDown = false;
     this.startPosition = null;
     this.endPosition = null;
     this.rectangleEntity = null;
     this.callback = null;
+    this.layerFilter = null; // ✅ 新增：layerId过滤器
 
     this._setupEvents();
   }
 
   _setupEvents() {
-    // 鼠标左键按下
     this.handler.setInputAction((movement) => {
-      if (!this.isDrawing) return; // 必须开启绘制模式才能开始
+      if (!this.isDrawing) return;
       this.startPosition = movement.position;
       this.endPosition = movement.position;
       this.isMouseDown = true;
-
       this._disableMapInteraction();
       this._createRectangleEntity();
     }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
 
-    // 鼠标移动
     this.handler.setInputAction((movement) => {
       if (!this.isDrawing || !this.isMouseDown) return;
       this.endPosition = movement.endPosition;
-      // CallbackProperty自动更新Rectangle，无需手动触发
     }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
-    // 鼠标左键抬起
     this.handler.setInputAction(() => {
       if (!this.isDrawing || !this.isMouseDown) return;
       this._finishSelection();
     }, Cesium.ScreenSpaceEventType.LEFT_UP);
   }
 
-  /**
-   * 开启绘制模式
-   */
   openDraw() {
     this.isDrawing = true;
   }
 
-  /**
-   * 关闭绘制模式
-   */
   closeDraw() {
     this.isDrawing = false;
-    this._clearRectangleEntity(); // 如果有绘制中框选，也清理掉
+    this._clearRectangleEntity();
     this.isMouseDown = false;
     this._enableMapInteraction();
+  }
+
+  setLayerFilter(layerId) {
+    this.layerFilter = layerId; // ✅ 设置只框选某个layerId的实体
   }
 
   _disableMapInteraction() {
@@ -115,15 +109,69 @@ export class BoxSelectionHelper {
 
   _pickEntities(rectangle) {
     const entities = [];
-    this.viewer.entities.values.forEach((entity) => {
-      if (!entity.position) return;
-      const cartographic = Cesium.Cartographic.fromCartesian(
-        entity.position.getValue(Cesium.JulianDate.now())
-      );
-      if (Cesium.Rectangle.contains(rectangle, cartographic)) {
-        entities.push(entity);
+
+    // ✅ 高效遍历
+    for (const entity of this.viewer.entities.values) {
+      if (this.layerFilter && entity.layerId !== this.layerFilter) {
+        continue; // 只选指定 layerId 的实体
       }
-    });
+
+      // 点/标签
+      if (entity.position) {
+        const pos = entity.position.getValue(Cesium.JulianDate.now());
+        const carto = Cesium.Cartographic.fromCartesian(pos);
+        if (Cesium.Rectangle.contains(rectangle, carto)) {
+          entities.push(entity);
+        }
+        continue;
+      }
+
+      // 线
+      if (entity.polyline?.positions) {
+        const positions = entity.polyline.positions.getValue(
+          Cesium.JulianDate.now()
+        );
+        if (
+          positions?.some((p) =>
+            Cesium.Rectangle.contains(
+              rectangle,
+              Cesium.Cartographic.fromCartesian(p)
+            )
+          )
+        ) {
+          entities.push(entity);
+        }
+        continue;
+      }
+
+      if (entity.polygon?.hierarchy) {
+        const hierarchy = entity.polygon.hierarchy.getValue(
+          Cesium.JulianDate.now()
+        );
+        if (hierarchy?.positions?.length > 0) {
+          let allPositions = [...hierarchy.positions];
+
+          if (hierarchy.holes) {
+            hierarchy.holes.forEach((hole) => {
+              if (hole.positions?.length > 0) {
+                allPositions = allPositions.concat(hole.positions);
+              }
+            });
+          }
+
+          if (allPositions.length > 0) {
+            const rectOfPolygon =
+              Cesium.Rectangle.fromCartesianArray(allPositions);
+
+            // ✅ 用 intersection 判断是否有重叠
+            if (Cesium.Rectangle.intersection(rectangle, rectOfPolygon)) {
+              entities.push(entity);
+            }
+          }
+        }
+      }
+    }
+
     return entities;
   }
 
@@ -140,24 +188,15 @@ export class BoxSelectionHelper {
 
     this._clearRectangleEntity();
     this._enableMapInteraction();
-
     this.startPosition = null;
     this.endPosition = null;
     this.isMouseDown = false;
-    // 不自动 closeDraw，因为外部控制
   }
 
-  /**
-   * 设置框选完成的回调
-   * @param {function} callback
-   */
   onBoxSelect(callback) {
     this.callback = callback;
   }
 
-  /**
-   * 销毁
-   */
   destroy() {
     this.handler?.destroy();
   }
