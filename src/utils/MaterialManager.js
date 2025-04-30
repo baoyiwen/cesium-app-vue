@@ -2,7 +2,7 @@
  * @Author: baoyiwen 511530203@qq.com
  * @Date: 2025-04-28 16:33:26
  * @LastEditors: baoyiwen 511530203@qq.com
- * @LastEditTime: 2025-04-28 18:08:06
+ * @LastEditTime: 2025-04-30 11:16:49
  * @FilePath: \cesium-app-vue\src\utils\MaterialManager.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -23,10 +23,13 @@ export class MaterialManager {
     if (this._registeredMaterials.has(name)) {
       return; // 已注册
     }
+    Cesium.Material[`${name}Type`] = name; // 注册材质类型
     Cesium.Material._materialCache.addMaterial(name, {
       fabric,
       translucent: true,
     });
+
+    console.error('材质注册成功', name);
     this._registeredMaterials.add(name);
   }
 
@@ -38,20 +41,38 @@ export class MaterialManager {
    */
   applyMaterial(entity, materialType, uniforms = {}) {
     if (entity.polygon) {
-      //   entity.polygon.material = {
-      //     fabric: {
-      //       type: materialType,
-      //       uniforms: {
-      //         ...uniforms,
-      //         color: convertColor(uniforms.color),
-      //       },
+      // entity.polygon.material = Cesium.Material.fromType('PulseScanMaterial', {
+      //   color: Cesium.Color.YELLOW, // 可覆盖默认颜色
+      //   speed: 1.0,
+      //   gradient: 0.1,
+      // });
+      // console.error(Cesium.Material._materialCache);
+      // console.error(new Cesium.MaterialProperty());
+      // console.error(Cesium.Material.fromType('PulseScanMaterial'), entity);
+      // entity.polygon.material = new Cesium.Material({
+      //   fabric: {
+      //     type: 'PulseScanMaterial',
+      //     uniforms: {
+      //       color: new Cesium.Color(1.0, 1.0, 0.0, 1.0), // 默认颜色（黄色）
+      //       speed: 1.0, // 扫描速度
+      //       count: 2.0, // 波纹数量（但当前 GLSL 代码未使用此参数）
+      //       gradient: 0.1, // 渐变过渡范围
       //     },
-      //   };
-      entity.polygon.material = Cesium.Material.fromType(materialType, {
-        // color: Cesium.Color.YELLOW, // 可覆盖默认颜色
-        // ...uniforms,
-        color: convertColor(uniforms.color),
-      });
+      //     source: `
+      //           czm_material czm_getMaterial(czm_materialInput materialInput) {
+      //             czm_material material = czm_getDefaultMaterial(materialInput);
+      //             vec2 st = materialInput.st;
+      //             float t = fract(czm_frameNumber * 0.016 * u_speed); // 使用 u_speed
+      //             float dis = distance(st, vec2(0.5, 0.5));
+      //             float alpha = smoothstep(t, t + u_gradient, dis) * step(dis, 0.5); // 使用 u_gradient
+      //             alpha *= (1.0 - smoothstep(0.5 - u_gradient, 0.5, dis));
+      //             material.alpha = alpha;
+      //             material.diffuse = u_color.rgb; // 使用 u_color
+      //             return material;
+      //           }
+      //         `,
+      //   },
+      // });
     } else if (entity.polyline) {
       entity.polyline.material = {
         fabric: {
@@ -81,5 +102,16 @@ export class MaterialManager {
     if (!material || !material.uniforms) return;
 
     Object.assign(material.uniforms, newUniforms);
+  }
+
+  deleteMaterial(name) {
+    if (this._registeredMaterials.has(name)) {
+      delete Cesium.Material._materialCache[name];
+      this._registeredMaterials.delete(name);
+      delete Cesium.Material[`${name}Type`];
+      console.error('材质删除成功', name);
+    } else {
+      console.error('材质不存在', name);
+    }
   }
 }
