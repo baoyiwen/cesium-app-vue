@@ -17,7 +17,7 @@ export class BoxSelectionHelper {
     this.endPosition = null;
     this.rectangleEntity = null;
     this.callback = null;
-    this.layerFilter = null; // ✅ 新增：layerId过滤器
+    this.layerFilter = null; // 新增：layerId过滤器
 
     this._setupEvents();
   }
@@ -55,7 +55,7 @@ export class BoxSelectionHelper {
   }
 
   setLayerFilter(layerId) {
-    this.layerFilter = layerId; // ✅ 设置只框选某个layerId的实体
+    this.layerFilter = layerId; // 设置只框选某个layerId的实体
   }
 
   _disableMapInteraction() {
@@ -163,7 +163,7 @@ export class BoxSelectionHelper {
             const rectOfPolygon =
               Cesium.Rectangle.fromCartesianArray(allPositions);
 
-            // ✅ 用 intersection 判断是否有重叠
+            // 用 intersection 判断是否有重叠
             if (Cesium.Rectangle.intersection(rectangle, rectOfPolygon)) {
               entities.push(entity);
             }

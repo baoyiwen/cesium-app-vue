@@ -7,21 +7,30 @@ import { defineStore } from 'pinia';
 import {
   GeoLayerManager,
   LayerEventDispatcher,
-  MaterialManager,
+  PrimitiveMaterialManager,
   PulseScanMaterialFabric,
 } from '../utils';
 import * as Cesium from 'cesium';
+import { EntityMaterialManager } from '../utils/material/EntityMaterialManager';
 
 export const useLayerStore = defineStore('layer', {
   state: () => ({
     viewer: null,
     manager: null, // GeoLayerManager 实例
     interactionManager: null, // LayerInteractionManager 实例
-    materialManager: null,
+    primitiveMaterialManager: null,
+    entityMaterialManager: null,
 
     entityLayers: {}, // { type: [{ layerId, entities }] }
     layers: [], // [{ id, name, groupId, entityTypes: [] }]
-    groups: [], // [{ id, name, zIndex, layers: [] }]
+    groups: [
+      {
+        id: 'default',
+        name: '默认分组',
+        zIndex: 0,
+        layers: [], // 图层ID列表
+      },
+    ], // [{ id, name, zIndex, layers: [] }]
     selectedEntities: [], // 多选中的实体列表
   }),
 
@@ -31,14 +40,13 @@ export const useLayerStore = defineStore('layer', {
       this.viewer = viewer;
       this.manager = new GeoLayerManager(viewer);
       this.interactionManager = new LayerEventDispatcher(viewer);
-      this.materialManager = new MaterialManager();
+      this.primitiveMaterialManager = new PrimitiveMaterialManager();
+      this.entityMaterialManager = new EntityMaterialManager();
       this.initMateria();
-      // this.materialManager.deleteMaterial()
-      console.error({ a: Cesium.Material });
     },
 
     initMateria() {
-      this.materialManager.registerMaterial(
+      this.primitiveMaterialManager.registerMaterial(
         'PulseScanMaterial',
         PulseScanMaterialFabric
       );
@@ -89,24 +97,10 @@ export const useLayerStore = defineStore('layer', {
           if (!e._originMaterial) {
             e._originMaterial = e.polygon.material;
           }
-          const startTime = Date.now();
-          this.materialManager.applyMaterial(e, 'PulseScanMaterial', {
-            color: '#a2b3ff88',
-            speed: 2.0,
-            count: 3.0,
-            gradient: 0.05,
+
+          this.entityMaterialManager.apply(e, 'BreathingPolygon', {
+            color: Cesium.Color.YELLOW,
           });
-          // e.polygon.material = new Cesium.Material({
-          //   fabric: {
-          //     type: 'PulseScanMaterial',
-          //     uniforms: {
-          //       color: Cesium.Color.YELLOW,
-          //       speed: 2.0,
-          //       count: 3.0,
-          //       gradient: 0.05,
-          //     },
-          //   },
-          // });
         }
 
         // ✅ Polyline 流光效果
