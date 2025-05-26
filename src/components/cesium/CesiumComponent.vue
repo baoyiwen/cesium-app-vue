@@ -49,6 +49,7 @@ import * as turf from '@turf/turf';
 import { GeoLayerManager } from '../../utils';
 import { useLayerStore } from '../../store/layerStore';
 import CesiumLayerPanelPro from './CesiumLayerPanelPro.vue';
+import earcut from 'earcut';
 // import { resolveGeoJsonFiles } from '../../utils/cesium';
 // import { RadarScanComponent } from './RadarScanComponent';
 const instane = getCurrentInstance();
@@ -257,8 +258,77 @@ const initCesium = async () => {
         },
       },
       sceneMode: Cesium.SceneMode.SCENE3D, // 设置为3D场景模式
+      shouldAnimate: true,
       ...props.options,
     });
+
+    fetch('/geojson/dm1d0009-WGS84.geojson')
+      .then((res) => res.json())
+      .then((geojson) => {
+        const geoPoints = geojson.features.map((f) => {
+          return {
+            lon: f.geometry.coordinates[0],
+            lat: f.geometry.coordinates[1],
+            height: f.properties.grid_code || 0,
+          };
+        });
+
+        if (geoPoints.length < 3) {
+          console.warn('点数太少，无法构建三角形面');
+          return;
+        }
+
+        const flatPositions = [];
+        const position3DList = [];
+
+        geoPoints.forEach((p) => {
+          flatPositions.push(p.lon, p.lat); // earcut 使用 2D 坐标剖分
+          position3DList.push(
+            Cesium.Cartesian3.fromDegrees(p.lon, p.lat, p.height)
+          );
+        });
+
+        const indices = earcut(flatPositions);
+        if (indices.length < 3) {
+          console.warn('无法剖分有效三角形，请检查点数据顺序或数量');
+          return;
+        }
+
+        const geometry = new Cesium.Geometry({
+          attributes: {
+            position: new Cesium.GeometryAttribute({
+              componentDatatype: Cesium.ComponentDatatype.DOUBLE,
+              componentsPerAttribute: 3,
+              values: Cesium.Cartesian3.packArray(position3DList, []),
+            }),
+          },
+          indices: new Uint16Array(indices),
+          primitiveType: Cesium.PrimitiveType.TRIANGLES,
+          boundingSphere: Cesium.BoundingSphere.fromPoints(position3DList),
+        });
+
+        const instance = new Cesium.GeometryInstance({
+          geometry: geometry,
+          attributes: {
+            color: Cesium.ColorGeometryInstanceAttribute.fromColor(
+              Cesium.Color.YELLOW.withAlpha(0.7)
+            ),
+          },
+        });
+
+        const primitive = new Cesium.Primitive({
+          geometryInstances: [instance],
+          appearance: new Cesium.PerInstanceColorAppearance({
+            closed: true,
+            translucent: true,
+          }),
+          asynchronous: false, // ✅ 不可省略！
+        });
+
+        viewer.scene.primitives.add(primitive);
+        viewer.zoomTo(primitive);
+      });
+
     viewer.camera.positionCartographic.height = props.maxCameraHeight;
     viewer.scene.mode = state.mode;
     viewer.scene.debugShowFramesPerSecond = true;
@@ -276,7 +346,11 @@ const initCesium = async () => {
     // const layerManager = new GeoLayerManager(viewer);
     window.layerStore = layerStore;
     window.layerManager = layerStore.manager;
-
+    // Cesium.GeoJsonDataSource(`/geojson/track/cq_track_data_lines.geojson`, {
+    //   clampToGround: true,
+    // }).then((res) => {
+    //   viewer.dataSources.add(res);
+    // });
     // viewer.screenSpaceEventHandler.setInputAction((clickEvent) => {
     //   const pickedPosition = viewer.camera.pickEllipsoid(
     //     clickEvent.position,

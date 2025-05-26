@@ -1,200 +1,1554 @@
 {
-"type": "FeatureCollection",
-"name": "cq_track_data_statiions",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-"features": [
-{ "type": "Feature", "properties": { "name": "朝天门" }, "geometry": { "type": "Point", "coordinates": [ 106.582256335495686, 29.56692915001782 ] } },
-{ "type": "Feature", "properties": { "name": "较场口" }, "geometry": { "type": "Point", "coordinates": [ 106.569644243973244, 29.555983690785109 ] } },
-{ "type": "Feature", "properties": { "name": "七星岗" }, "geometry": { "type": "Point", "coordinates": [ 106.559184921338144, 29.556953022303873 ] } },
-{ "type": "Feature", "properties": { "name": "两路口" }, "geometry": { "type": "Point", "coordinates": [ 106.544886118024763, 29.555882182432043 ] } },
-{ "type": "Feature", "properties": { "name": "鹅岭" }, "geometry": { "type": "Point", "coordinates": [ 106.529069228413604, 29.550981109581151 ] } },
-{ "type": "Feature", "properties": { "name": "大坪" }, "geometry": { "type": "Point", "coordinates": [ 106.51502279449916, 29.543426576422814 ] } },
-{ "type": "Feature", "properties": { "name": "石油路" }, "geometry": { "type": "Point", "coordinates": [ 106.504484678508604, 29.540855763339593 ] } },
-{ "type": "Feature", "properties": { "name": "歇台子" }, "geometry": { "type": "Point", "coordinates": [ 106.494500237115034, 29.538196894798499 ] } },
-{ "type": "Feature", "properties": { "name": "石桥铺" }, "geometry": { "type": "Point", "coordinates": [ 106.480998635176476, 29.535448909309459 ] } },
-{ "type": "Feature", "properties": { "name": "高庙村" }, "geometry": { "type": "Point", "coordinates": [ 106.465275251696511, 29.539041839044923 ] } },
-{ "type": "Feature", "properties": { "name": "马家岩" }, "geometry": { "type": "Point", "coordinates": [ 106.464608051368813, 29.547904426912069 ] } },
-{ "type": "Feature", "properties": { "name": "小龙坎" }, "geometry": { "type": "Point", "coordinates": [ 106.464385928510524, 29.556282086876884 ] } },
-{ "type": "Feature", "properties": { "name": "沙坪坝" }, "geometry": { "type": "Point", "coordinates": [ 106.455438657519665, 29.558772139054149 ] } },
-{ "type": "Feature", "properties": { "name": "杨公桥" }, "geometry": { "type": "Point", "coordinates": [ 106.446246484724497, 29.564122908492738 ] } },
-{ "type": "Feature", "properties": { "name": "烈士墓" }, "geometry": { "type": "Point", "coordinates": [ 106.441447321898693, 29.57000147393704 ] } },
-{ "type": "Feature", "properties": { "name": "磁器口" }, "geometry": { "type": "Point", "coordinates": [ 106.442431479771841, 29.579285173375276 ] } },
-{ "type": "Feature", "properties": { "name": "石井坡" }, "geometry": { "type": "Point", "coordinates": [ 106.440289994283987, 29.591973044472308 ] } },
-{ "type": "Feature", "properties": { "name": "双碑" }, "geometry": { "type": "Point", "coordinates": [ 106.440376134750053, 29.608328151508697 ] } },
-{ "type": "Feature", "properties": { "name": "赖家桥" }, "geometry": { "type": "Point", "coordinates": [ 106.377435717431368, 29.612806866747245 ] } },
-{ "type": "Feature", "properties": { "name": "微电园" }, "geometry": { "type": "Point", "coordinates": [ 106.358919626218778, 29.612208700051049 ] } },
-{ "type": "Feature", "properties": { "name": "陈家桥" }, "geometry": { "type": "Point", "coordinates": [ 106.324604314657037, 29.610031719415133 ] } },
-{ "type": "Feature", "properties": { "name": "大学城" }, "geometry": { "type": "Point", "coordinates": [ 106.305060698931456, 29.60999132318458 ] } },
-{ "type": "Feature", "properties": { "name": "尖顶坡" }, "geometry": { "type": "Point", "coordinates": [ 106.289153640799, 29.609991264912232 ] } },
-{ "type": "Feature", "properties": { "name": "璧山" }, "geometry": { "type": "Point", "coordinates": [ 106.228849031227881, 29.61494795991802 ] } },
-{ "type": "Feature", "properties": { "name": "鱼洞" }, "geometry": { "type": "Point", "coordinates": [ 106.502067054738276, 29.37873413840498 ] } },
-{ "type": "Feature", "properties": { "name": "大江" }, "geometry": { "type": "Point", "coordinates": [ 106.497246440242975, 29.386935424894208 ] } },
-{ "type": "Feature", "properties": { "name": "白居寺" }, "geometry": { "type": "Point", "coordinates": [ 106.488109506297121, 29.417372309441806 ] } },
-{ "type": "Feature", "properties": { "name": "刘家坝" }, "geometry": { "type": "Point", "coordinates": [ 106.478842785587645, 29.430248367471297 ] } },
-{ "type": "Feature", "properties": { "name": "金家湾" }, "geometry": { "type": "Point", "coordinates": [ 106.471613000404929, 29.440491729479678 ] } },
-{ "type": "Feature", "properties": { "name": "建桥" }, "geometry": { "type": "Point", "coordinates": [ 106.470811093510747, 29.452625483194346 ] } },
-{ "type": "Feature", "properties": { "name": "天堂堡" }, "geometry": { "type": "Point", "coordinates": [ 106.468393605034095, 29.469500811796625 ] } },
-{ "type": "Feature", "properties": { "name": "新山村" }, "geometry": { "type": "Point", "coordinates": [ 106.472488327119791, 29.474657596370303 ] } },
-{ "type": "Feature", "properties": { "name": "大渡口" }, "geometry": { "type": "Point", "coordinates": [ 106.474300729736981, 29.484517142780085 ] } },
-{ "type": "Feature", "properties": { "name": "平安" }, "geometry": { "type": "Point", "coordinates": [ 106.481159752277264, 29.491429677002063 ] } },
-{ "type": "Feature", "properties": { "name": "马王场" }, "geometry": { "type": "Point", "coordinates": [ 106.48487009795474, 29.49879531977982 ] } },
-{ "type": "Feature", "properties": { "name": "大堰村" }, "geometry": { "type": "Point", "coordinates": [ 106.495343895038488, 29.50235302526373 ] } },
-{ "type": "Feature", "properties": { "name": "动物园" }, "geometry": { "type": "Point", "coordinates": [ 106.505583164669318, 29.502817445575328 ] } },
-{ "type": "Feature", "properties": { "name": "杨家坪" }, "geometry": { "type": "Point", "coordinates": [ 106.510097790703554, 29.510613433322035 ] } },
-{ "type": "Feature", "properties": { "name": "谢家湾" }, "geometry": { "type": "Point", "coordinates": [ 106.513983056783246, 29.523171668355733 ] } },
-{ "type": "Feature", "properties": { "name": "袁家岗" }, "geometry": { "type": "Point", "coordinates": [ 106.509935076963842, 29.531573440603342 ] } },
-{ "type": "Feature", "properties": { "name": "佛图关" }, "geometry": { "type": "Point", "coordinates": [ 106.5277429965018, 29.552152151901723 ] } },
-{ "type": "Feature", "properties": { "name": "李子坝" }, "geometry": { "type": "Point", "coordinates": [ 106.533914549262434, 29.555713404442638 ] } },
-{ "type": "Feature", "properties": { "name": "曾家岩" }, "geometry": { "type": "Point", "coordinates": [ 106.546390483903167, 29.569312528307673 ] } },
-{ "type": "Feature", "properties": { "name": "大溪沟" }, "geometry": { "type": "Point", "coordinates": [ 106.554690074667462, 29.569035196383265 ] } },
-{ "type": "Feature", "properties": { "name": "黄花园" }, "geometry": { "type": "Point", "coordinates": [ 106.561140599380209, 29.566267394343907 ] } },
-{ "type": "Feature", "properties": { "name": "临江门" }, "geometry": { "type": "Point", "coordinates": [ 106.571493619136476, 29.5608904319371 ] } },
-{ "type": "Feature", "properties": { "name": "金竹" }, "geometry": { "type": "Point", "coordinates": [ 106.520039727482967, 29.378480384634738 ] } },
-{ "type": "Feature", "properties": { "name": "鱼胡路" }, "geometry": { "type": "Point", "coordinates": [ 106.535445813407406, 29.380573974178404 ] } },
-{ "type": "Feature", "properties": { "name": "学堂湾" }, "geometry": { "type": "Point", "coordinates": [ 106.539322674375455, 29.40095783135417 ] } },
-{ "type": "Feature", "properties": { "name": "大山村" }, "geometry": { "type": "Point", "coordinates": [ 106.53993292286269, 29.41575650251114 ] } },
-{ "type": "Feature", "properties": { "name": "花溪" }, "geometry": { "type": "Point", "coordinates": [ 106.546663869861476, 29.435189391587883 ] } },
-{ "type": "Feature", "properties": { "name": "岔路口" }, "geometry": { "type": "Point", "coordinates": [ 106.550862739576246, 29.451518995239152 ] } },
-{ "type": "Feature", "properties": { "name": "九公里" }, "geometry": { "type": "Point", "coordinates": [ 106.555335862992521, 29.461319131842266 ] } },
-{ "type": "Feature", "properties": { "name": "麒龙" }, "geometry": { "type": "Point", "coordinates": [ 106.558867523829235, 29.469864544849358 ] } },
-{ "type": "Feature", "properties": { "name": "八公里" }, "geometry": { "type": "Point", "coordinates": [ 106.562169738280275, 29.481010268955302 ] } },
-{ "type": "Feature", "properties": { "name": "重庆交通大学" }, "geometry": { "type": "Point", "coordinates": [ 106.569079465584466, 29.491492277634222 ] } },
-{ "type": "Feature", "properties": { "name": "六公里" }, "geometry": { "type": "Point", "coordinates": [ 106.569645339872849, 29.500695871600414 ] } },
-{ "type": "Feature", "properties": { "name": "重庆工商大学" }, "geometry": { "type": "Point", "coordinates": [ 106.57018916247975, 29.510241389245568 ] } },
-{ "type": "Feature", "properties": { "name": "四公里" }, "geometry": { "type": "Point", "coordinates": [ 106.572704958861578, 29.520369881028909 ] } },
-{ "type": "Feature", "properties": { "name": "南坪" }, "geometry": { "type": "Point", "coordinates": [ 106.566193923613767, 29.528882173022087 ] } },
-{ "type": "Feature", "properties": { "name": "工贸" }, "geometry": { "type": "Point", "coordinates": [ 106.559664033076459, 29.535132078683855 ] } },
-{ "type": "Feature", "properties": { "name": "铜元局" }, "geometry": { "type": "Point", "coordinates": [ 106.547820777070896, 29.539956696062614 ] } },
-{ "type": "Feature", "properties": { "name": "牛角沱" }, "geometry": { "type": "Point", "coordinates": [ 106.5383939903124, 29.56250566058036 ] } },
-{ "type": "Feature", "properties": { "name": "华新街" }, "geometry": { "type": "Point", "coordinates": [ 106.533441681303131, 29.566689104973538 ] } },
-{ "type": "Feature", "properties": { "name": "观音桥" }, "geometry": { "type": "Point", "coordinates": [ 106.529030767818384, 29.576221591871995 ] } },
-{ "type": "Feature", "properties": { "name": "红旗河沟" }, "geometry": { "type": "Point", "coordinates": [ 106.522439279848939, 29.588167578367411 ] } },
-{ "type": "Feature", "properties": { "name": "嘉州路" }, "geometry": { "type": "Point", "coordinates": [ 106.518368769578942, 29.598289122943441 ] } },
-{ "type": "Feature", "properties": { "name": "郑家院子" }, "geometry": { "type": "Point", "coordinates": [ 106.526642192725959, 29.602356426480753 ] } },
-{ "type": "Feature", "properties": { "name": "唐家院子" }, "geometry": { "type": "Point", "coordinates": [ 106.536891491684798, 29.601965024051719 ] } },
-{ "type": "Feature", "properties": { "name": "狮子坪" }, "geometry": { "type": "Point", "coordinates": [ 106.545478760574937, 29.604141323608044 ] } },
-{ "type": "Feature", "properties": { "name": "龙头寺" }, "geometry": { "type": "Point", "coordinates": [ 106.54590263268517, 29.619597632962208 ] } },
-{ "type": "Feature", "properties": { "name": "童家院子" }, "geometry": { "type": "Point", "coordinates": [ 106.551377366392728, 29.631229050456305 ] } },
-{ "type": "Feature", "properties": { "name": "金渝" }, "geometry": { "type": "Point", "coordinates": [ 106.566970187244607, 29.638223054527405 ] } },
-{ "type": "Feature", "properties": { "name": "金童路" }, "geometry": { "type": "Point", "coordinates": [ 106.563698666763443, 29.646168822539792 ] } },
-{ "type": "Feature", "properties": { "name": "鸳鸯" }, "geometry": { "type": "Point", "coordinates": [ 106.556436942736212, 29.664153553462139 ] } },
-{ "type": "Feature", "properties": { "name": "园博园" }, "geometry": { "type": "Point", "coordinates": [ 106.560064808691337, 29.67746623763016 ] } },
-{ "type": "Feature", "properties": { "name": "翠云" }, "geometry": { "type": "Point", "coordinates": [ 106.568988831797739, 29.688712514920297 ] } },
-{ "type": "Feature", "properties": { "name": "长福路" }, "geometry": { "type": "Point", "coordinates": [ 106.584916041342851, 29.690462270426664 ] } },
-{ "type": "Feature", "properties": { "name": "回兴" }, "geometry": { "type": "Point", "coordinates": [ 106.60216570998746, 29.693242046622061 ] } },
-{ "type": "Feature", "properties": { "name": "双龙" }, "geometry": { "type": "Point", "coordinates": [ 106.615068831496856, 29.700738619969759 ] } },
-{ "type": "Feature", "properties": { "name": "碧津" }, "geometry": { "type": "Point", "coordinates": [ 106.628898500555877, 29.713985861748167 ] } },
-{ "type": "Feature", "properties": { "name": "举人坝" }, "geometry": { "type": "Point", "coordinates": [ 106.663602335186667, 29.794137737195534 ] } },
-{ "type": "Feature", "properties": { "name": "莲花" }, "geometry": { "type": "Point", "coordinates": [ 106.652086513194135, 29.788304945130736 ] } },
-{ "type": "Feature", "properties": { "name": "观月路" }, "geometry": { "type": "Point", "coordinates": [ 106.648998394018633, 29.777746706820096 ] } },
-{ "type": "Feature", "properties": { "name": "高堡湖" }, "geometry": { "type": "Point", "coordinates": [ 106.639210637785695, 29.754706234848527 ] } },
-{ "type": "Feature", "properties": { "name": "空港广场" }, "geometry": { "type": "Point", "coordinates": [ 106.629866942443584, 29.739154341605669 ] } },
-{ "type": "Feature", "properties": { "name": "双凤桥" }, "geometry": { "type": "Point", "coordinates": [ 106.628920395074431, 29.731751785994405 ] } },
-{ "type": "Feature", "properties": { "name": "民安大道" }, "geometry": { "type": "Point", "coordinates": [ 106.525337404138156, 29.611698094854177 ] } },
-{ "type": "Feature", "properties": { "name": "重庆北站北广场" }, "geometry": { "type": "Point", "coordinates": [ 106.547473694065971, 29.615753913678525 ] } },
-{ "type": "Feature", "properties": { "name": "头塘" }, "geometry": { "type": "Point", "coordinates": [ 106.570541142656424, 29.611298139027195 ] } },
-{ "type": "Feature", "properties": { "name": "保税港" }, "geometry": { "type": "Point", "coordinates": [ 106.578777255096142, 29.619227867940186 ] } },
-{ "type": "Feature", "properties": { "name": "寸滩" }, "geometry": { "type": "Point", "coordinates": [ 106.602454471237962, 29.624690442070062 ] } },
-{ "type": "Feature", "properties": { "name": "黑石子" }, "geometry": { "type": "Point", "coordinates": [ 106.616707759371607, 29.627430330936633 ] } },
-{ "type": "Feature", "properties": { "name": "港城" }, "geometry": { "type": "Point", "coordinates": [ 106.62821569626351, 29.622583810695577 ] } },
-{ "type": "Feature", "properties": { "name": "太平冲" }, "geometry": { "type": "Point", "coordinates": [ 106.637762841795734, 29.608717138754862 ] } },
-{ "type": "Feature", "properties": { "name": "唐家沱" }, "geometry": { "type": "Point", "coordinates": [ 106.656547890445154, 29.609243624965266 ] } },
-{ "type": "Feature", "properties": { "name": "石新路" }, "geometry": { "type": "Point", "coordinates": [ 106.473560028689278, 29.528367460148655 ] } },
-{ "type": "Feature", "properties": { "name": "巴山" }, "geometry": { "type": "Point", "coordinates": [ 106.465859709781498, 29.523371540931596 ] } },
-{ "type": "Feature", "properties": { "name": "凤西路" }, "geometry": { "type": "Point", "coordinates": [ 106.450219388272956, 29.516335571742257 ] } },
-{ "type": "Feature", "properties": { "name": "重庆西站" }, "geometry": { "type": "Point", "coordinates": [ 106.435389744729122, 29.502687948392825 ] } },
-{ "type": "Feature", "properties": { "name": "华岩寺" }, "geometry": { "type": "Point", "coordinates": [ 106.441613109787042, 29.496548502923829 ] } },
-{ "type": "Feature", "properties": { "name": "华成路" }, "geometry": { "type": "Point", "coordinates": [ 106.44956205590654, 29.483073536608234 ] } },
-{ "type": "Feature", "properties": { "name": "半山" }, "geometry": { "type": "Point", "coordinates": [ 106.446643636825058, 29.476087581079817 ] } },
-{ "type": "Feature", "properties": { "name": "中梁山" }, "geometry": { "type": "Point", "coordinates": [ 106.442099080506011, 29.461863301567721 ] } },
-{ "type": "Feature", "properties": { "name": "金建路" }, "geometry": { "type": "Point", "coordinates": [ 106.438097402193179, 29.445151223015262 ] } },
-{ "type": "Feature", "properties": { "name": "华岩中心" }, "geometry": { "type": "Point", "coordinates": [ 106.436432640569691, 29.431750190504083 ] } },
-{ "type": "Feature", "properties": { "name": "跳磴" }, "geometry": { "type": "Point", "coordinates": [ 106.433655881124949, 29.411016655710785 ] } },
-{ "type": "Feature", "properties": { "name": "北碚" }, "geometry": { "type": "Point", "coordinates": [ 106.43348597162769, 29.827790032321825 ] } },
-{ "type": "Feature", "properties": { "name": "西南大学" }, "geometry": { "type": "Point", "coordinates": [ 106.419723987437251, 29.818748457457403 ] } },
-{ "type": "Feature", "properties": { "name": "状元碑" }, "geometry": { "type": "Point", "coordinates": [ 106.394857490366249, 29.805663665961632 ] } },
-{ "type": "Feature", "properties": { "name": "龙凤溪" }, "geometry": { "type": "Point", "coordinates": [ 106.399876309435413, 29.791969832415671 ] } },
-{ "type": "Feature", "properties": { "name": "向家岗" }, "geometry": { "type": "Point", "coordinates": [ 106.469018710616041, 29.741791408653825 ] } },
-{ "type": "Feature", "properties": { "name": "蔡家" }, "geometry": { "type": "Point", "coordinates": [ 106.487652216441148, 29.738882786767743 ] } },
-{ "type": "Feature", "properties": { "name": "金山寺" }, "geometry": { "type": "Point", "coordinates": [ 106.488223934398945, 29.681947310495705 ] } },
-{ "type": "Feature", "properties": { "name": "礼嘉" }, "geometry": { "type": "Point", "coordinates": [ 106.484223887286575, 29.669880136013763 ] } },
-{ "type": "Feature", "properties": { "name": "九曲河" }, "geometry": { "type": "Point", "coordinates": [ 106.478969478108866, 29.656629942682784 ] } },
-{ "type": "Feature", "properties": { "name": "康庄" }, "geometry": { "type": "Point", "coordinates": [ 106.475055575498232, 29.637415654835031 ] } },
-{ "type": "Feature", "properties": { "name": "大竹林" }, "geometry": { "type": "Point", "coordinates": [ 106.474434252020785, 29.630681714351081 ] } },
-{ "type": "Feature", "properties": { "name": "光电园" }, "geometry": { "type": "Point", "coordinates": [ 106.495546518985023, 29.618770004682911 ] } },
-{ "type": "Feature", "properties": { "name": "冉家坝" }, "geometry": { "type": "Point", "coordinates": [ 106.494993745319562, 29.601309654258166 ] } },
-{ "type": "Feature", "properties": { "name": "大龙山" }, "geometry": { "type": "Point", "coordinates": [ 106.494937300152671, 29.592190218014995 ] } },
-{ "type": "Feature", "properties": { "name": "花卉园" }, "geometry": { "type": "Point", "coordinates": [ 106.509122496772534, 29.585969496795673 ] } },
-{ "type": "Feature", "properties": { "name": "黄泥塝" }, "geometry": { "type": "Point", "coordinates": [ 106.534325389323257, 29.591276252198078 ] } },
-{ "type": "Feature", "properties": { "name": "红土地" }, "geometry": { "type": "Point", "coordinates": [ 106.547456364048898, 29.586859774799994 ] } },
-{ "type": "Feature", "properties": { "name": "五里店" }, "geometry": { "type": "Point", "coordinates": [ 106.561549179196959, 29.587887582690094 ] } },
-{ "type": "Feature", "properties": { "name": "江北城" }, "geometry": { "type": "Point", "coordinates": [ 106.568373824633014, 29.579987374417911 ] } },
-{ "type": "Feature", "properties": { "name": "大剧院" }, "geometry": { "type": "Point", "coordinates": [ 106.57354928890048, 29.571916621256257 ] } },
-{ "type": "Feature", "properties": { "name": "小什字" }, "geometry": { "type": "Point", "coordinates": [ 106.579845662667964, 29.56293299393149 ] } },
-{ "type": "Feature", "properties": { "name": "上新街" }, "geometry": { "type": "Point", "coordinates": [ 106.593508114765498, 29.558992008871975 ] } },
-{ "type": "Feature", "properties": { "name": "刘家坪" }, "geometry": { "type": "Point", "coordinates": [ 106.652323731945316, 29.527634211082248 ] } },
-{ "type": "Feature", "properties": { "name": "长生桥" }, "geometry": { "type": "Point", "coordinates": [ 106.654211247046973, 29.513807008945367 ] } },
-{ "type": "Feature", "properties": { "name": "邱家湾" }, "geometry": { "type": "Point", "coordinates": [ 106.645822312455337, 29.500670469764369 ] } },
-{ "type": "Feature", "properties": { "name": "茶园" }, "geometry": { "type": "Point", "coordinates": [ 106.639179881129721, 29.490392115666765 ] } },
-{ "type": "Feature", "properties": { "name": "曹家湾" }, "geometry": { "type": "Point", "coordinates": [ 106.490430960679049, 29.72365388994216 ] } },
-{ "type": "Feature", "properties": { "name": "沙河坝" }, "geometry": { "type": "Point", "coordinates": [ 106.552745762996366, 29.846989134215868 ] } },
-{ "type": "Feature", "properties": { "name": "红岩坪" }, "geometry": { "type": "Point", "coordinates": [ 106.545528151458612, 29.83575898867506 ] } },
-{ "type": "Feature", "properties": { "name": "复兴" }, "geometry": { "type": "Point", "coordinates": [ 106.546299212717045, 29.82494439139106 ] } },
-{ "type": "Feature", "properties": { "name": "思源" }, "geometry": { "type": "Point", "coordinates": [ 106.545521679381238, 29.809827101320771 ] } },
-{ "type": "Feature", "properties": { "name": "刘家院子" }, "geometry": { "type": "Point", "coordinates": [ 106.550250978009601, 29.783466607980266 ] } },
-{ "type": "Feature", "properties": { "name": "清溪河" }, "geometry": { "type": "Point", "coordinates": [ 106.544211763890544, 29.766816099891521 ] } },
-{ "type": "Feature", "properties": { "name": "王家庄" }, "geometry": { "type": "Point", "coordinates": [ 106.541919497153629, 29.746289018609449 ] } },
-{ "type": "Feature", "properties": { "name": "悦来" }, "geometry": { "type": "Point", "coordinates": [ 106.54422106263273, 29.728307775929562 ] } },
-{ "type": "Feature", "properties": { "name": "国博中心" }, "geometry": { "type": "Point", "coordinates": [ 106.541688626187053, 29.719412844893711 ] } },
-{ "type": "Feature", "properties": { "name": "高义口" }, "geometry": { "type": "Point", "coordinates": [ 106.524123705533299, 29.705531241808238 ] } },
-{ "type": "Feature", "properties": { "name": "黄茅坪" }, "geometry": { "type": "Point", "coordinates": [ 106.527717418540362, 29.67898313565944 ] } },
-{ "type": "Feature", "properties": { "name": "欢乐谷" }, "geometry": { "type": "Point", "coordinates": [ 106.504788733576703, 29.671920063975971 ] } },
-{ "type": "Feature", "properties": { "name": "鲤鱼池" }, "geometry": { "type": "Point", "coordinates": [ 106.546438127872761, 29.576837049960961 ] } },
-{ "type": "Feature", "properties": { "name": "龙头寺公园" }, "geometry": { "type": "Point", "coordinates": [ 106.546886486717909, 29.601488004287521 ] } },
-{ "type": "Feature", "properties": { "name": "重庆北站南广场" }, "geometry": { "type": "Point", "coordinates": [ 106.546269724464608, 29.609957847142741 ] } },
-{ "type": "Feature", "properties": { "name": "民心佳园" }, "geometry": { "type": "Point", "coordinates": [ 106.563921873960865, 29.629464541406865 ] } },
-{ "type": "Feature", "properties": { "name": "三亚湾" }, "geometry": { "type": "Point", "coordinates": [ 106.581094876862466, 29.641206864743712 ] } },
-{ "type": "Feature", "properties": { "name": "上湾路" }, "geometry": { "type": "Point", "coordinates": [ 106.605248883783261, 29.652755855226893 ] } },
-{ "type": "Feature", "properties": { "name": "环山公园" }, "geometry": { "type": "Point", "coordinates": [ 106.618394700031018, 29.66170095891329 ] } },
-{ "type": "Feature", "properties": { "name": "长河" }, "geometry": { "type": "Point", "coordinates": [ 106.62568828942905, 29.676899389078148 ] } },
-{ "type": "Feature", "properties": { "name": "江北机场T3航站楼" }, "geometry": { "type": "Point", "coordinates": [ 106.651695237209665, 29.709897690051122 ] } },
-{ "type": "Feature", "properties": { "name": "江北机场T2航站楼" }, "geometry": { "type": "Point", "coordinates": [ 106.633243842227216, 29.719610252459926 ] } },
-{ "type": "Feature", "properties": { "name": "渝北广场" }, "geometry": { "type": "Point", "coordinates": [ 106.625190339784595, 29.721176075562223 ] } },
-{ "type": "Feature", "properties": { "name": "鹿山" }, "geometry": { "type": "Point", "coordinates": [ 106.604656361770182, 29.723441403579127 ] } },
-{ "type": "Feature", "properties": { "name": "中央公园东" }, "geometry": { "type": "Point", "coordinates": [ 106.58826733888678, 29.726506651933086 ] } },
-{ "type": "Feature", "properties": { "name": "中央公园" }, "geometry": { "type": "Point", "coordinates": [ 106.580026701462842, 29.726521046066541 ] } },
-{ "type": "Feature", "properties": { "name": "中央公园西" }, "geometry": { "type": "Point", "coordinates": [ 106.568622325715339, 29.726542023854815 ] } },
-{ "type": "Feature", "properties": { "name": "二郎" }, "geometry": { "type": "Point", "coordinates": [ 106.458204699508144, 29.507659628330405 ] } },
-{ "type": "Feature", "properties": { "name": "彩云湖" }, "geometry": { "type": "Point", "coordinates": [ 106.467904333594788, 29.518684875412273 ] } },
-{ "type": "Feature", "properties": { "name": "陈家坪" }, "geometry": { "type": "Point", "coordinates": [ 106.486087989675198, 29.526756270907637 ] } },
-{ "type": "Feature", "properties": { "name": "奥体中心" }, "geometry": { "type": "Point", "coordinates": [ 106.499623469558713, 29.526040363337486 ] } },
-{ "type": "Feature", "properties": { "name": "海峡路" }, "geometry": { "type": "Point", "coordinates": [ 106.542516085308591, 29.52128034647599 ] } },
-{ "type": "Feature", "properties": { "name": "南湖" }, "geometry": { "type": "Point", "coordinates": [ 106.553290894290171, 29.519735376918945 ] } },
-{ "type": "Feature", "properties": { "name": "罗家坝" }, "geometry": { "type": "Point", "coordinates": [ 106.579220136523645, 29.529127465988694 ] } },
-{ "type": "Feature", "properties": { "name": "海棠溪" }, "geometry": { "type": "Point", "coordinates": [ 106.583414093364226, 29.537418591152861 ] } },
-{ "type": "Feature", "properties": { "name": "上浩" }, "geometry": { "type": "Point", "coordinates": [ 106.591251569910341, 29.552374260170982 ] } },
-{ "type": "Feature", "properties": { "name": "仁济" }, "geometry": { "type": "Point", "coordinates": [ 106.597224166626759, 29.567719019172209 ] } },
-{ "type": "Feature", "properties": { "name": "涂山" }, "geometry": { "type": "Point", "coordinates": [ 106.597158571135552, 29.57888271516007 ] } },
-{ "type": "Feature", "properties": { "name": "弹子石" }, "geometry": { "type": "Point", "coordinates": [ 106.589555310017275, 29.588509193936158 ] } },
-{ "type": "Feature", "properties": { "name": "渝鲁" }, "geometry": { "type": "Point", "coordinates": [ 106.555734474794747, 29.595184386777895 ] } },
-{ "type": "Feature", "properties": { "name": "洪湖东路" }, "geometry": { "type": "Point", "coordinates": [ 106.509911260344609, 29.610378617520698 ] } },
-{ "type": "Feature", "properties": { "name": "动步公园" }, "geometry": { "type": "Point", "coordinates": [ 106.501805833691222, 29.606470561950132 ] } },
-{ "type": "Feature", "properties": { "name": "体育公园" }, "geometry": { "type": "Point", "coordinates": [ 106.482346495295815, 29.601330045258532 ] } },
-{ "type": "Feature", "properties": { "name": "南桥寺" }, "geometry": { "type": "Point", "coordinates": [ 106.478533085689037, 29.593008473942263 ] } },
-{ "type": "Feature", "properties": { "name": "玉带山" }, "geometry": { "type": "Point", "coordinates": [ 106.472933733388643, 29.583218754529693 ] } },
-{ "type": "Feature", "properties": { "name": "重庆大学" }, "geometry": { "type": "Point", "coordinates": [ 106.459712861126931, 29.570007904910668 ] } },
-{ "type": "Feature", "properties": { "name": "天星桥" }, "geometry": { "type": "Point", "coordinates": [ 106.453180736272714, 29.540330395265848 ] } },
-{ "type": "Feature", "properties": { "name": "重庆图书馆" }, "geometry": { "type": "Point", "coordinates": [ 106.450498827397027, 29.533001068954903 ] } },
-{ "type": "Feature", "properties": { "name": "凤鸣山" }, "geometry": { "type": "Point", "coordinates": [ 106.444767624868192, 29.526902481648548 ] } },
-{ "type": "Feature", "properties": { "name": "上桥" }, "geometry": { "type": "Point", "coordinates": [ 106.43887100719769, 29.520911246519923 ] } },
-{ "type": "Feature", "properties": { "name": "华龙" }, "geometry": { "type": "Point", "coordinates": [ 106.447152039303035, 29.497914188421749 ] } },
-{ "type": "Feature", "properties": { "name": "大石坝" }, "geometry": { "type": "Point", "coordinates": [ 106.491160541237107, 29.572678269640221 ] } },
-{ "type": "Feature", "properties": { "name": "幸福广场" }, "geometry": { "type": "Point", "coordinates": [ 106.505190824116255, 29.619783983644467 ] } },
-{ "type": "Feature", "properties": { "name": "人和" }, "geometry": { "type": "Point", "coordinates": [ 106.518918703053728, 29.626027365024463 ] } },
-{ "type": "Feature", "properties": { "name": "和睦路" }, "geometry": { "type": "Point", "coordinates": [ 106.529326438714435, 29.632050243530305 ] } },
-{ "type": "Feature", "properties": { "name": "重光" }, "geometry": { "type": "Point", "coordinates": [ 106.525067583201974, 29.65062918569943 ] } },
-{ "type": "Feature", "properties": { "name": "胡霞街" }, "geometry": { "type": "Point", "coordinates": [ 106.534643708022955, 29.662605641807772 ] } },
-{ "type": "Feature", "properties": { "name": "丹鹤" }, "geometry": { "type": "Point", "coordinates": [ 106.546865867333963, 29.670052338872509 ] } },
-{ "type": "Feature", "properties": { "name": "园博中心" }, "geometry": { "type": "Point", "coordinates": [ 106.557431105047613, 29.679187457945158 ] } }
-]
+  "type": "FeatureCollection",
+  "name": "cq_track_data_statiions",
+  "crs": {
+    "type": "name",
+    "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "朝天门" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.582256335495686, 29.56692915001782]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "较场口" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.569644243973244, 29.555983690785109]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "七星岗" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.559184921338144, 29.556953022303873]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "两路口" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.544886118024763, 29.555882182432043]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "鹅岭" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.529069228413604, 29.550981109581151]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "大坪" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.51502279449916, 29.543426576422814]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "石油路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.504484678508604, 29.540855763339593]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "歇台子" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.494500237115034, 29.538196894798499]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "石桥铺" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.480998635176476, 29.535448909309459]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "高庙村" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.465275251696511, 29.539041839044923]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "马家岩" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.464608051368813, 29.547904426912069]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "小龙坎" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.464385928510524, 29.556282086876884]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "沙坪坝" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.455438657519665, 29.558772139054149]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "杨公桥" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.446246484724497, 29.564122908492738]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "烈士墓" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.441447321898693, 29.57000147393704]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "磁器口" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.442431479771841, 29.579285173375276]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "石井坡" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.440289994283987, 29.591973044472308]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "双碑" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.440376134750053, 29.608328151508697]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "赖家桥" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.377435717431368, 29.612806866747245]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "微电园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.358919626218778, 29.612208700051049]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "陈家桥" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.324604314657037, 29.610031719415133]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "大学城" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.305060698931456, 29.60999132318458]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "尖顶坡" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.289153640799, 29.609991264912232]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "璧山" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.228849031227881, 29.61494795991802]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "鱼洞" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.502067054738276, 29.37873413840498]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "大江" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.497246440242975, 29.386935424894208]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "白居寺" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.488109506297121, 29.417372309441806]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "刘家坝" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.478842785587645, 29.430248367471297]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "金家湾" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.471613000404929, 29.440491729479678]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "建桥" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.470811093510747, 29.452625483194346]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "天堂堡" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.468393605034095, 29.469500811796625]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "新山村" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.472488327119791, 29.474657596370303]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "大渡口" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.474300729736981, 29.484517142780085]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "平安" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.481159752277264, 29.491429677002063]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "马王场" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.48487009795474, 29.49879531977982]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "大堰村" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.495343895038488, 29.50235302526373]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "动物园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.505583164669318, 29.502817445575328]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "杨家坪" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.510097790703554, 29.510613433322035]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "谢家湾" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.513983056783246, 29.523171668355733]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "袁家岗" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.509935076963842, 29.531573440603342]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "佛图关" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.5277429965018, 29.552152151901723]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "李子坝" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.533914549262434, 29.555713404442638]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "曾家岩" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.546390483903167, 29.569312528307673]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "大溪沟" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.554690074667462, 29.569035196383265]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "黄花园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.561140599380209, 29.566267394343907]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "临江门" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.571493619136476, 29.5608904319371]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "金竹" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.520039727482967, 29.378480384634738]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "鱼胡路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.535445813407406, 29.380573974178404]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "学堂湾" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.539322674375455, 29.40095783135417]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "大山村" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.53993292286269, 29.41575650251114]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "花溪" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.546663869861476, 29.435189391587883]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "岔路口" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.550862739576246, 29.451518995239152]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "九公里" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.555335862992521, 29.461319131842266]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "麒龙" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.558867523829235, 29.469864544849358]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "八公里" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.562169738280275, 29.481010268955302]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "重庆交通大学" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.569079465584466, 29.491492277634222]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "六公里" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.569645339872849, 29.500695871600414]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "重庆工商大学" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.57018916247975, 29.510241389245568]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "四公里" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.572704958861578, 29.520369881028909]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "南坪" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.566193923613767, 29.528882173022087]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "工贸" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.559664033076459, 29.535132078683855]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "铜元局" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.547820777070896, 29.539956696062614]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "牛角沱" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.5383939903124, 29.56250566058036]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "华新街" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.533441681303131, 29.566689104973538]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "观音桥" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.529030767818384, 29.576221591871995]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "红旗河沟" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.522439279848939, 29.588167578367411]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "嘉州路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.518368769578942, 29.598289122943441]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "郑家院子" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.526642192725959, 29.602356426480753]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "唐家院子" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.536891491684798, 29.601965024051719]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "狮子坪" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.545478760574937, 29.604141323608044]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "龙头寺" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.54590263268517, 29.619597632962208]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "童家院子" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.551377366392728, 29.631229050456305]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "金渝" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.566970187244607, 29.638223054527405]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "金童路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.563698666763443, 29.646168822539792]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "鸳鸯" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.556436942736212, 29.664153553462139]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "园博园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.560064808691337, 29.67746623763016]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "翠云" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.568988831797739, 29.688712514920297]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "长福路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.584916041342851, 29.690462270426664]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "回兴" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.60216570998746, 29.693242046622061]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "双龙" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.615068831496856, 29.700738619969759]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "碧津" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.628898500555877, 29.713985861748167]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "举人坝" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.663602335186667, 29.794137737195534]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "莲花" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.652086513194135, 29.788304945130736]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "观月路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.648998394018633, 29.777746706820096]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "高堡湖" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.639210637785695, 29.754706234848527]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "空港广场" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.629866942443584, 29.739154341605669]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "双凤桥" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.628920395074431, 29.731751785994405]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "民安大道" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.525337404138156, 29.611698094854177]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "重庆北站北广场" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.547473694065971, 29.615753913678525]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "头塘" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.570541142656424, 29.611298139027195]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "保税港" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.578777255096142, 29.619227867940186]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "寸滩" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.602454471237962, 29.624690442070062]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "黑石子" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.616707759371607, 29.627430330936633]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "港城" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.62821569626351, 29.622583810695577]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "太平冲" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.637762841795734, 29.608717138754862]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "唐家沱" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.656547890445154, 29.609243624965266]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "石新路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.473560028689278, 29.528367460148655]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "巴山" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.465859709781498, 29.523371540931596]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "凤西路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.450219388272956, 29.516335571742257]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "重庆西站" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.435389744729122, 29.502687948392825]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "华岩寺" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.441613109787042, 29.496548502923829]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "华成路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.44956205590654, 29.483073536608234]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "半山" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.446643636825058, 29.476087581079817]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "中梁山" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.442099080506011, 29.461863301567721]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "金建路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.438097402193179, 29.445151223015262]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "华岩中心" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.436432640569691, 29.431750190504083]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "跳磴" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.433655881124949, 29.411016655710785]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "北碚" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.43348597162769, 29.827790032321825]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "西南大学" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.419723987437251, 29.818748457457403]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "状元碑" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.394857490366249, 29.805663665961632]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "龙凤溪" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.399876309435413, 29.791969832415671]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "向家岗" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.469018710616041, 29.741791408653825]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "蔡家" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.487652216441148, 29.738882786767743]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "金山寺" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.488223934398945, 29.681947310495705]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "礼嘉" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.484223887286575, 29.669880136013763]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "九曲河" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.478969478108866, 29.656629942682784]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "康庄" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.475055575498232, 29.637415654835031]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "大竹林" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.474434252020785, 29.630681714351081]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "光电园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.495546518985023, 29.618770004682911]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "冉家坝" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.494993745319562, 29.601309654258166]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "大龙山" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.494937300152671, 29.592190218014995]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "花卉园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.509122496772534, 29.585969496795673]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "黄泥塝" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.534325389323257, 29.591276252198078]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "红土地" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.547456364048898, 29.586859774799994]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "五里店" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.561549179196959, 29.587887582690094]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "江北城" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.568373824633014, 29.579987374417911]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "大剧院" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.57354928890048, 29.571916621256257]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "小什字" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.579845662667964, 29.56293299393149]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "上新街" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.593508114765498, 29.558992008871975]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "刘家坪" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.652323731945316, 29.527634211082248]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "长生桥" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.654211247046973, 29.513807008945367]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "邱家湾" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.645822312455337, 29.500670469764369]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "茶园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.639179881129721, 29.490392115666765]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "曹家湾" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.490430960679049, 29.72365388994216]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "沙河坝" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.552745762996366, 29.846989134215868]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "红岩坪" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.545528151458612, 29.83575898867506]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "复兴" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.546299212717045, 29.82494439139106]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "思源" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.545521679381238, 29.809827101320771]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "刘家院子" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.550250978009601, 29.783466607980266]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "清溪河" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.544211763890544, 29.766816099891521]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "王家庄" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.541919497153629, 29.746289018609449]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "悦来" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.54422106263273, 29.728307775929562]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "国博中心" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.541688626187053, 29.719412844893711]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "高义口" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.524123705533299, 29.705531241808238]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "黄茅坪" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.527717418540362, 29.67898313565944]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "欢乐谷" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.504788733576703, 29.671920063975971]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "鲤鱼池" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.546438127872761, 29.576837049960961]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "龙头寺公园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.546886486717909, 29.601488004287521]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "重庆北站南广场" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.546269724464608, 29.609957847142741]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "民心佳园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.563921873960865, 29.629464541406865]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "三亚湾" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.581094876862466, 29.641206864743712]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "上湾路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.605248883783261, 29.652755855226893]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "环山公园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.618394700031018, 29.66170095891329]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "长河" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.62568828942905, 29.676899389078148]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "江北机场T3航站楼" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.651695237209665, 29.709897690051122]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "江北机场T2航站楼" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.633243842227216, 29.719610252459926]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "渝北广场" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.625190339784595, 29.721176075562223]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "鹿山" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.604656361770182, 29.723441403579127]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "中央公园东" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.58826733888678, 29.726506651933086]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "中央公园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.580026701462842, 29.726521046066541]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "中央公园西" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.568622325715339, 29.726542023854815]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "二郎" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.458204699508144, 29.507659628330405]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "彩云湖" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.467904333594788, 29.518684875412273]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "陈家坪" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.486087989675198, 29.526756270907637]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "奥体中心" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.499623469558713, 29.526040363337486]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "海峡路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.542516085308591, 29.52128034647599]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "南湖" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.553290894290171, 29.519735376918945]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "罗家坝" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.579220136523645, 29.529127465988694]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "海棠溪" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.583414093364226, 29.537418591152861]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "上浩" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.591251569910341, 29.552374260170982]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "仁济" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.597224166626759, 29.567719019172209]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "涂山" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.597158571135552, 29.57888271516007]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "弹子石" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.589555310017275, 29.588509193936158]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "渝鲁" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.555734474794747, 29.595184386777895]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "洪湖东路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.509911260344609, 29.610378617520698]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "动步公园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.501805833691222, 29.606470561950132]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "体育公园" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.482346495295815, 29.601330045258532]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "南桥寺" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.478533085689037, 29.593008473942263]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "玉带山" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.472933733388643, 29.583218754529693]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "重庆大学" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.459712861126931, 29.570007904910668]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "天星桥" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.453180736272714, 29.540330395265848]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "重庆图书馆" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.450498827397027, 29.533001068954903]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "凤鸣山" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.444767624868192, 29.526902481648548]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "上桥" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.43887100719769, 29.520911246519923]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "华龙" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.447152039303035, 29.497914188421749]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "大石坝" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.491160541237107, 29.572678269640221]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "幸福广场" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.505190824116255, 29.619783983644467]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "人和" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.518918703053728, 29.626027365024463]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "和睦路" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.529326438714435, 29.632050243530305]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "重光" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.525067583201974, 29.65062918569943]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "胡霞街" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.534643708022955, 29.662605641807772]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "丹鹤" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.546865867333963, 29.670052338872509]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "园博中心" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.557431105047613, 29.679187457945158]
+      }
+    }
+  ]
 }
