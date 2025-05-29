@@ -68,7 +68,7 @@ const props = defineProps({
   },
   isOpenTerrain: {
     type: Boolean,
-    default: false,
+    default: true,
   },
   token: {
     type: String,
@@ -261,74 +261,364 @@ const initCesium = async () => {
       shouldAnimate: true,
       ...props.options,
     });
+    // viewer.terrainProvider = await Cesium.CesiumTerrainProvider.fromUrl(
+    //   'https://221.7.85.102:28081/dem/ChongQingCIM_DEM',
+    //   {
+    //     requestVertexNormals: true,
+    //   }
+    // );
+    // fetch('/geojson/dm1d0009-WGS84.geojson')
+    //   .then((res) => res.json())
+    //   .then((geojson) => {
+    //     const geoPoints = geojson.features.map((f) => {
+    //       return {
+    //         lon: f.geometry.coordinates[0],
+    //         lat: f.geometry.coordinates[1],
+    //         height: f.properties.grid_code || 0,
+    //       };
+    //     });
 
-    fetch('/geojson/dm1d0009-WGS84.geojson')
+    //     // ✅ 排序：按纬度（从北到南）+ 经度（从西到东）
+    //     const sortedPoints = [...geoPoints].sort((a, b) => {
+    //       if (Math.abs(b.lat - a.lat) > 1e-6) return b.lat - a.lat;
+    //       return a.lon - b.lon;
+    //     });
+    //     const flatPositions = [];
+    //     const position3DList = [];
+    //     const heights = [];
+
+    //     sortedPoints.forEach((p) => {
+    //       const h = 100 + p.height * 50; // 平滑控制水深效果
+    //       const cart = Cesium.Cartesian3.fromDegrees(p.lon, p.lat, h);
+    //       position3DList.push(cart);
+    //       heights.push(h);
+    //     });
+
+    //     if (geoPoints.length < 3) {
+    //       console.warn('点数太少，无法构建三角形面');
+    //       return;
+    //     }
+
+    //     sortedPoints.forEach((p) => {
+    //       flatPositions.push(p.lon, p.lat); // earcut 使用 2D 坐标剖分
+    //       // position3DList.push(
+    //       //   Cesium.Cartesian3.fromDegrees(p.lon, p.lat, p.height)
+    //       // );
+    //     });
+
+    //     const indices = earcut(flatPositions);
+    //     if (indices.length < 3) {
+    //       console.warn('无法剖分有效三角形，请检查点数据顺序或数量');
+    //       return;
+    //     }
+
+    //     const geometry = new Cesium.Geometry({
+    //       attributes: {
+    //         position: new Cesium.GeometryAttribute({
+    //           componentDatatype: Cesium.ComponentDatatype.DOUBLE,
+    //           componentsPerAttribute: 3,
+    //           values: Cesium.Cartesian3.packArray(position3DList, []),
+    //         }),
+    //       },
+    //       indices: new Uint16Array(indices),
+    //       primitiveType: Cesium.PrimitiveType.TRIANGLES,
+    //       boundingSphere: Cesium.BoundingSphere.fromPoints(position3DList),
+    //     });
+
+    //     const instance = new Cesium.GeometryInstance({
+    //       geometry: geometry,
+    //       attributes: {
+    //         color: Cesium.ColorGeometryInstanceAttribute.fromColor(
+    //           Cesium.Color.fromBytes(64, 157, 253, 200)
+    //         ),
+    //       },
+    //     });
+
+    //     const primitive = new Cesium.Primitive({
+    //       geometryInstances: [instance],
+    //       appearance: new Cesium.PerInstanceColorAppearance({
+    //         closed: true,
+    //         translucent: true,
+    //         flat: true,
+    //       }),
+    //       asynchronous: false, // ✅ 不可省略！
+    //     });
+    //     viewer.scene.primitives.add(primitive);
+    //     flyTo([geoPoints[0].lon, geoPoints[0].lat]);
+    //   });
+    // fetch('/geojson/dm1d0009-WGS84.geojson')
+    //   .then((res) => res.json())
+    //   .then((geojson) => {
+    //     function createWaterSurface() {
+    //       const points = geojson.features.map((feature) => {
+    //         return {
+    //           position: feature.geometry.coordinates,
+    //           gridCode: feature.properties.grid_code,
+    //         };
+    //       });
+
+    //       // 确定网格尺寸（基于数据特征）
+    //       const rowCount = 11; // 根据数据特征估算的行数
+    //       const colCount = 16; // 根据数据特征估算的列数
+
+    //       // 创建3D坐标数组
+    //       const positions = [];
+    //       const heights = [];
+
+    //       // 创建水面几何体
+    //       const createWaterGeometry = () => {
+    //         const flatPositions = [];
+    //         const position3DList = [];
+
+    //         points.forEach((point) => {
+    //           const lon = point.position[0];
+    //           const lat = point.position[1];
+    //           const height = 100 + point.gridCode * 1000; // 基础高度100米 + 放大水深
+
+    //           flatPositions.push(lon, lat);
+    //           position3DList.push(
+    //             Cesium.Cartesian3.fromDegrees(lon, lat, height)
+    //           );
+    //           heights.push(height);
+    //         });
+
+    //         // 生成三角形索引（使用网格拓扑）
+    //         const indices = [];
+    //         for (let row = 0; row < rowCount - 1; row++) {
+    //           for (let col = 0; col < colCount - 1; col++) {
+    //             const topLeft = row * colCount + col;
+    //             const topRight = row * colCount + col + 1;
+    //             const bottomLeft = (row + 1) * colCount + col;
+    //             const bottomRight = (row + 1) * colCount + col + 1;
+
+    //             // 创建两个三角形组成一个网格单元
+    //             indices.push(topLeft, bottomLeft, topRight);
+    //             indices.push(topRight, bottomLeft, bottomRight);
+    //           }
+    //         }
+
+    //         // 创建几何体
+    //         const geometry = new Cesium.Geometry({
+    //           attributes: {
+    //             position: new Cesium.GeometryAttribute({
+    //               componentDatatype: Cesium.ComponentDatatype.DOUBLE,
+    //               componentsPerAttribute: 3,
+    //               values: Cesium.Cartesian3.packArray(position3DList),
+    //             }),
+    //           },
+    //           indices: new Uint16Array(indices), // indices,
+    //           primitiveType: Cesium.PrimitiveType.TRIANGLES,
+    //           boundingSphere: Cesium.BoundingSphere.fromPoints(position3DList),
+    //           vertexFormat: Cesium.VertexFormat.POSITION_ONLY,
+    //         });
+
+    //         // 计算法线（使水面更平滑）
+    //         return Cesium.GeometryPipeline.computeNormal(geometry);
+    //       };
+
+    //       // 创建水面材质
+    //       const createWaterMaterial = () => {
+    //         return new Cesium.Material({
+    //           fabric: {
+    //             type: 'Water',
+    //             uniforms: {
+    //               baseWaterColor: new Cesium.Color(0.1, 0.4, 0.8, 0.85),
+    //               blendColor: new Cesium.Color(0.0, 0.8, 1.0, 0.5),
+    //               specularMap: Cesium.buildModuleUrl(
+    //                 'Assets/Textures/waterNormals.jpg'
+    //               ),
+    //               normalMap: Cesium.buildModuleUrl(
+    //                 'Assets/Textures/waterNormals.jpg'
+    //               ),
+    //               frequency: 500.0,
+    //               animationSpeed: 0.02,
+    //               amplitude: 3.0,
+    //             },
+    //           },
+    //         });
+    //       };
+
+    //       // 创建水面图元
+    //       const waterGeometry = createWaterGeometry();
+    //       const waterMaterial = createWaterMaterial();
+
+    //       const instance = new Cesium.GeometryInstance({
+    //         geometry: waterGeometry,
+    //         id: 'waterSurface',
+    //       });
+
+    //       const primitive = new Cesium.Primitive({
+    //         geometryInstances: instance,
+    //         appearance: new Cesium.MaterialAppearance({
+    //           material: waterMaterial,
+    //           translucent: true,
+    //           flat: false,
+    //         }),
+    //         asynchronous: false,
+    //       });
+
+    //       viewer.scene.primitives.add(primitive);
+
+    //       // 计算中心点并缩放到模型
+    //       const centerLon =
+    //         points.reduce((sum, p) => sum + p.position[0], 0) / points.length;
+    //       const centerLat =
+    //         points.reduce((sum, p) => sum + p.position[1], 0) / points.length;
+    //       const centerHeight = Math.max(...heights) + 50;
+
+    //       viewer.camera.flyTo({
+    //         destination: Cesium.Cartesian3.fromDegrees(
+    //           centerLon,
+    //           centerLat,
+    //           centerHeight
+    //         ),
+    //         duration: 2,
+    //       });
+
+    //       // loadingElement.style.display = 'none';
+    //     }
+
+    //     // 等待地形加载完成后创建水面
+    //     setTimeout(createWaterSurface, 500);
+
+    //     // 添加水面深度图例
+    //     const addLegend = () => {
+    //       const legend = document.createElement('div');
+    //       legend.style.position = 'absolute';
+    //       legend.style.bottom = '20px';
+    //       legend.style.left = '20px';
+    //       legend.style.backgroundColor = 'rgba(40, 40, 40, 0.7)';
+    //       legend.style.padding = '10px';
+    //       legend.style.borderRadius = '5px';
+    //       legend.style.color = 'white';
+    //       legend.style.fontFamily = 'Arial, sans-serif';
+    //       legend.style.zIndex = '1000';
+
+    //       legend.innerHTML = `
+    //             <h4 style="margin-top:0; margin-bottom:10px;">积水深度图例</h4>
+    //             <div style="display:flex; align-items:center; margin-bottom:5px;">
+    //                 <div style="width:20px; height:20px; background:rgba(0, 102, 204, 0.6); margin-right:10px;"></div>
+    //                 <span>浅水区 (0-0.01m)</span>
+    //             </div>
+    //             <div style="display:flex; align-items:center; margin-bottom:5px;">
+    //                 <div style="width:20px; height:20px; background:rgba(0, 77, 153, 0.7); margin-right:10px;"></div>
+    //                 <span>中等深度 (0.01-0.02m)</span>
+    //             </div>
+    //             <div style="display:flex; align-items:center;">
+    //                 <div style="width:20px; height:20px; background:rgba(0, 51, 102, 0.8); margin-right:10px;"></div>
+    //                 <span>深水区 (>0.02m)</span>
+    //             </div>
+    //         `;
+
+    //       viewer.container.appendChild(legend);
+    //     };
+    //     // 添加图例
+    //     setTimeout(addLegend, 3000);
+    //   });
+    fetch('/geojson/dm1d0009-WGS84.geojson') // 替换为你的路径
       .then((res) => res.json())
       .then((geojson) => {
-        const geoPoints = geojson.features.map((f) => {
-          return {
-            lon: f.geometry.coordinates[0],
-            lat: f.geometry.coordinates[1],
-            height: f.properties.grid_code || 0,
-          };
+        const rawPoints = geojson.features.map((f) => ({
+          lon: f.geometry.coordinates[0],
+          lat: f.geometry.coordinates[1],
+          height: f.properties.grid_code || 0,
+        }));
+
+        // // ✅ 你需要根据点总数设置行列（手动确保）
+        // const rowCount = 11;
+        // const colCount = 16;
+
+        // ✅ 排序：从北到南（纬度大到小），再从西到东（经度小到大）
+        const sortedPoints = [...rawPoints].sort((a, b) => {
+          if (Math.abs(b.lat - a.lat) > 1e-6) return b.lat - a.lat;
+          return a.lon - b.lon;
         });
 
-        if (geoPoints.length < 3) {
-          console.warn('点数太少，无法构建三角形面');
+        // 获取所有唯一纬度值
+        const uniqueLats = Array.from(new Set(sortedPoints.map((p) => p.lat)));
+        const rowCount = uniqueLats.length;
+
+        // 行数一旦有，列数 = 总点数 / 行数
+        const colCount = sortedPoints.length / rowCount;
+        console.error(rowCount, colCount);
+        if (rawPoints.length !== rowCount * colCount) {
+          console.error('点数与行列不匹配。');
           return;
         }
-
-        const flatPositions = [];
+        // ✅ 构建顶点坐标（平滑高度）
         const position3DList = [];
-
-        geoPoints.forEach((p) => {
-          flatPositions.push(p.lon, p.lat); // earcut 使用 2D 坐标剖分
-          position3DList.push(
-            Cesium.Cartesian3.fromDegrees(p.lon, p.lat, p.height)
-          );
+        const heights = [];
+        sortedPoints.forEach((p) => {
+          const h = 100 + p.height * 50;
+          const cart = Cesium.Cartesian3.fromDegrees(p.lon, p.lat, h);
+          position3DList.push(cart);
+          heights.push(h);
         });
 
-        const indices = earcut(flatPositions);
-        if (indices.length < 3) {
-          console.warn('无法剖分有效三角形，请检查点数据顺序或数量');
-          return;
+        // ✅ 构建三角索引
+        const indices = [];
+        for (let row = 0; row < rowCount - 1; row++) {
+          for (let col = 0; col < colCount - 1; col++) {
+            const topLeft = row * colCount + col;
+            const topRight = topLeft + 1;
+            const bottomLeft = (row + 1) * colCount + col;
+            const bottomRight = bottomLeft + 1;
+
+            indices.push(topLeft, bottomLeft, topRight);
+            indices.push(topRight, bottomLeft, bottomRight);
+          }
         }
 
+        // ✅ 创建 Geometry（注意 values 字段）
         const geometry = new Cesium.Geometry({
           attributes: {
             position: new Cesium.GeometryAttribute({
               componentDatatype: Cesium.ComponentDatatype.DOUBLE,
               componentsPerAttribute: 3,
-              values: Cesium.Cartesian3.packArray(position3DList, []),
+              values: new Float64Array(
+                Cesium.Cartesian3.packArray(position3DList)
+              ),
             }),
           },
           indices: new Uint16Array(indices),
           primitiveType: Cesium.PrimitiveType.TRIANGLES,
           boundingSphere: Cesium.BoundingSphere.fromPoints(position3DList),
+          vertexFormat: Cesium.VertexFormat.POSITION_ONLY,
+        });
+
+        // ✅ 使用 MaterialAppearance（关键）
+        const appearance = new Cesium.MaterialAppearance({
+          material: Cesium.Material.fromType('Color', {
+            color: Cesium.Color.SKYBLUE.withAlpha(0.6),
+          }),
+          translucent: true,
+          flat: false,
         });
 
         const instance = new Cesium.GeometryInstance({
           geometry: geometry,
-          attributes: {
-            color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-              Cesium.Color.YELLOW.withAlpha(0.7)
-            ),
-          },
         });
 
         const primitive = new Cesium.Primitive({
           geometryInstances: [instance],
-          appearance: new Cesium.PerInstanceColorAppearance({
-            closed: true,
-            translucent: true,
-          }),
-          asynchronous: false, // ✅ 不可省略！
+          appearance: appearance,
+          asynchronous: false,
         });
 
         viewer.scene.primitives.add(primitive);
-        viewer.zoomTo(primitive);
-      });
 
+        // ✅ 相机自动定位
+        const avgLon =
+          sortedPoints.reduce((sum, p) => sum + p.lon, 0) / sortedPoints.length;
+        const avgLat =
+          sortedPoints.reduce((sum, p) => sum + p.lat, 0) / sortedPoints.length;
+        const avgHeight = Math.max(...heights) + 100;
+
+        viewer.camera.flyTo({
+          destination: Cesium.Cartesian3.fromDegrees(avgLon, avgLat, avgHeight),
+          duration: 2,
+        });
+      });
     viewer.camera.positionCartographic.height = props.maxCameraHeight;
     viewer.scene.mode = state.mode;
     viewer.scene.debugShowFramesPerSecond = true;

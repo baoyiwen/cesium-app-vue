@@ -24,7 +24,7 @@ import axios from 'axios';
 const layerStore = useLayerStore();
 const state = reactive({
   cesiumToken: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NzFhYjc5My02YjcyLTRiODYtYTNmZS02ZjcxMWJkMjNiMTMiLCJpZCI6MjMyMTc3LCJpYXQiOjE3Mzg4MDgxMjB9.HLg6mO34PUne2nzscnhtJK7gnzbpUmsqbjU6NKjyBME`,
-  isOpenTerrain: false,
+  isOpenTerrain: true,
 });
 const cesiumOptions = ref({
   /**
