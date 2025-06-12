@@ -515,110 +515,110 @@ const initCesium = async () => {
     //     // 添加图例
     //     setTimeout(addLegend, 3000);
     //   });
-    fetch('/geojson/dm1d0009-WGS84.geojson') // 替换为你的路径
-      .then((res) => res.json())
-      .then((geojson) => {
-        const rawPoints = geojson.features.map((f) => ({
-          lon: f.geometry.coordinates[0],
-          lat: f.geometry.coordinates[1],
-          height: f.properties.grid_code || 0,
-        }));
+    // fetch('/geojson/dm1d0009-WGS84.geojson') // 替换为你的路径
+    //   .then((res) => res.json())
+    //   .then((geojson) => {
+    //     const rawPoints = geojson.features.map((f) => ({
+    //       lon: f.geometry.coordinates[0],
+    //       lat: f.geometry.coordinates[1],
+    //       height: f.properties.grid_code || 0,
+    //     }));
 
-        // // ✅ 你需要根据点总数设置行列（手动确保）
-        // const rowCount = 11;
-        // const colCount = 16;
+    //     // // ✅ 你需要根据点总数设置行列（手动确保）
+    //     // const rowCount = 11;
+    //     // const colCount = 16;
 
-        // ✅ 排序：从北到南（纬度大到小），再从西到东（经度小到大）
-        const sortedPoints = [...rawPoints].sort((a, b) => {
-          if (Math.abs(b.lat - a.lat) > 1e-6) return b.lat - a.lat;
-          return a.lon - b.lon;
-        });
+    //     // ✅ 排序：从北到南（纬度大到小），再从西到东（经度小到大）
+    //     const sortedPoints = [...rawPoints].sort((a, b) => {
+    //       if (Math.abs(b.lat - a.lat) > 1e-6) return b.lat - a.lat;
+    //       return a.lon - b.lon;
+    //     });
 
-        // 获取所有唯一纬度值
-        const uniqueLats = Array.from(new Set(sortedPoints.map((p) => p.lat)));
-        const rowCount = uniqueLats.length;
+    //     // 获取所有唯一纬度值
+    //     const uniqueLats = Array.from(new Set(sortedPoints.map((p) => p.lat)));
+    //     const rowCount = uniqueLats.length;
 
-        // 行数一旦有，列数 = 总点数 / 行数
-        const colCount = sortedPoints.length / rowCount;
-        console.error(rowCount, colCount);
-        if (rawPoints.length !== rowCount * colCount) {
-          console.error('点数与行列不匹配。');
-          return;
-        }
-        // ✅ 构建顶点坐标（平滑高度）
-        const position3DList = [];
-        const heights = [];
-        sortedPoints.forEach((p) => {
-          const h = 100 + p.height * 50;
-          const cart = Cesium.Cartesian3.fromDegrees(p.lon, p.lat, h);
-          position3DList.push(cart);
-          heights.push(h);
-        });
+    //     // 行数一旦有，列数 = 总点数 / 行数
+    //     const colCount = sortedPoints.length / rowCount;
+    //     console.error(rowCount, colCount);
+    //     if (rawPoints.length !== rowCount * colCount) {
+    //       console.error('点数与行列不匹配。');
+    //       return;
+    //     }
+    //     // ✅ 构建顶点坐标（平滑高度）
+    //     const position3DList = [];
+    //     const heights = [];
+    //     sortedPoints.forEach((p) => {
+    //       const h = 100 + p.height * 50;
+    //       const cart = Cesium.Cartesian3.fromDegrees(p.lon, p.lat, h);
+    //       position3DList.push(cart);
+    //       heights.push(h);
+    //     });
 
-        // ✅ 构建三角索引
-        const indices = [];
-        for (let row = 0; row < rowCount - 1; row++) {
-          for (let col = 0; col < colCount - 1; col++) {
-            const topLeft = row * colCount + col;
-            const topRight = topLeft + 1;
-            const bottomLeft = (row + 1) * colCount + col;
-            const bottomRight = bottomLeft + 1;
+    //     // ✅ 构建三角索引
+    //     const indices = [];
+    //     for (let row = 0; row < rowCount - 1; row++) {
+    //       for (let col = 0; col < colCount - 1; col++) {
+    //         const topLeft = row * colCount + col;
+    //         const topRight = topLeft + 1;
+    //         const bottomLeft = (row + 1) * colCount + col;
+    //         const bottomRight = bottomLeft + 1;
 
-            indices.push(topLeft, bottomLeft, topRight);
-            indices.push(topRight, bottomLeft, bottomRight);
-          }
-        }
+    //         indices.push(topLeft, bottomLeft, topRight);
+    //         indices.push(topRight, bottomLeft, bottomRight);
+    //       }
+    //     }
 
-        // ✅ 创建 Geometry（注意 values 字段）
-        const geometry = new Cesium.Geometry({
-          attributes: {
-            position: new Cesium.GeometryAttribute({
-              componentDatatype: Cesium.ComponentDatatype.DOUBLE,
-              componentsPerAttribute: 3,
-              values: new Float64Array(
-                Cesium.Cartesian3.packArray(position3DList)
-              ),
-            }),
-          },
-          indices: new Uint16Array(indices),
-          primitiveType: Cesium.PrimitiveType.TRIANGLES,
-          boundingSphere: Cesium.BoundingSphere.fromPoints(position3DList),
-          vertexFormat: Cesium.VertexFormat.POSITION_ONLY,
-        });
+    //     // ✅ 创建 Geometry（注意 values 字段）
+    //     const geometry = new Cesium.Geometry({
+    //       attributes: {
+    //         position: new Cesium.GeometryAttribute({
+    //           componentDatatype: Cesium.ComponentDatatype.DOUBLE,
+    //           componentsPerAttribute: 3,
+    //           values: new Float64Array(
+    //             Cesium.Cartesian3.packArray(position3DList)
+    //           ),
+    //         }),
+    //       },
+    //       indices: new Uint16Array(indices),
+    //       primitiveType: Cesium.PrimitiveType.TRIANGLES,
+    //       boundingSphere: Cesium.BoundingSphere.fromPoints(position3DList),
+    //       vertexFormat: Cesium.VertexFormat.POSITION_ONLY,
+    //     });
 
-        // ✅ 使用 MaterialAppearance（关键）
-        const appearance = new Cesium.MaterialAppearance({
-          material: Cesium.Material.fromType('Color', {
-            color: Cesium.Color.SKYBLUE.withAlpha(0.6),
-          }),
-          translucent: true,
-          flat: false,
-        });
+    //     // ✅ 使用 MaterialAppearance（关键）
+    //     const appearance = new Cesium.MaterialAppearance({
+    //       material: Cesium.Material.fromType('Color', {
+    //         color: Cesium.Color.SKYBLUE.withAlpha(0.6),
+    //       }),
+    //       translucent: true,
+    //       flat: false,
+    //     });
 
-        const instance = new Cesium.GeometryInstance({
-          geometry: geometry,
-        });
+    //     const instance = new Cesium.GeometryInstance({
+    //       geometry: geometry,
+    //     });
 
-        const primitive = new Cesium.Primitive({
-          geometryInstances: [instance],
-          appearance: appearance,
-          asynchronous: false,
-        });
+    //     const primitive = new Cesium.Primitive({
+    //       geometryInstances: [instance],
+    //       appearance: appearance,
+    //       asynchronous: false,
+    //     });
 
-        viewer.scene.primitives.add(primitive);
+    //     viewer.scene.primitives.add(primitive);
 
-        // ✅ 相机自动定位
-        const avgLon =
-          sortedPoints.reduce((sum, p) => sum + p.lon, 0) / sortedPoints.length;
-        const avgLat =
-          sortedPoints.reduce((sum, p) => sum + p.lat, 0) / sortedPoints.length;
-        const avgHeight = Math.max(...heights) + 100;
+    //     // ✅ 相机自动定位
+    //     const avgLon =
+    //       sortedPoints.reduce((sum, p) => sum + p.lon, 0) / sortedPoints.length;
+    //     const avgLat =
+    //       sortedPoints.reduce((sum, p) => sum + p.lat, 0) / sortedPoints.length;
+    //     const avgHeight = Math.max(...heights) + 100;
 
-        viewer.camera.flyTo({
-          destination: Cesium.Cartesian3.fromDegrees(avgLon, avgLat, avgHeight),
-          duration: 2,
-        });
-      });
+    //     viewer.camera.flyTo({
+    //       destination: Cesium.Cartesian3.fromDegrees(avgLon, avgLat, avgHeight),
+    //       duration: 2,
+    //     });
+    //   });
     viewer.camera.positionCartographic.height = props.maxCameraHeight;
     viewer.scene.mode = state.mode;
     viewer.scene.debugShowFramesPerSecond = true;

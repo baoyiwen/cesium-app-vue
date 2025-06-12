@@ -12,7 +12,7 @@ const routes = [
       activeIcon: '/images/menus/map-draw-night.svg',
       showInMenu: true,
       isDefault: true,
-    }
+    },
   },
   {
     path: '/showpage',
@@ -24,7 +24,7 @@ const routes = [
       activeIcon: '/images/menus/map-draw-night.svg',
       showInMenu: true,
       isDefault: true,
-    }
+    },
   },
   {
     path: '/403',
