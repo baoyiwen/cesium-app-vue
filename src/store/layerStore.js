@@ -214,7 +214,9 @@ export const useLayerStore = defineStore('layer', {
           name,
           groupId,
           visible: true,
-          entityTypes: Object.keys(entitiesByType),
+          entityTypes: Object.entries(entitiesByType)
+            .filter(([key, value]) => value.length)
+            .map(([key, value]) => key),
         });
       }
 

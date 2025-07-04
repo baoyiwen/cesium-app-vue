@@ -23,8 +23,8 @@ import { BoxSelectionHelper } from '../utils/BoxSelectionHelper.js';
 import axios from 'axios';
 const layerStore = useLayerStore();
 const state = reactive({
-  cesiumToken: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NzFhYjc5My02YjcyLTRiODYtYTNmZS02ZjcxMWJkMjNiMTMiLCJpZCI6MjMyMTc3LCJpYXQiOjE3Mzg4MDgxMjB9.HLg6mO34PUne2nzscnhtJK7gnzbpUmsqbjU6NKjyBME`,
-  isOpenTerrain: false,
+  cesiumToken: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmY2QwZTgyYS0yOWFkLTQwM2QtYWYyOS0wYjY2YmQ5MDVhMTYiLCJpZCI6MjMyMTc3LCJpYXQiOjE3NDk3ODMzMzB9.N8GyH36fMLhOGsyzB8ez7UJicKgOxmDOMSBiSQO1zb0`,
+  isOpenTerrain: true,
 });
 const cesiumOptions = ref({
   /**
@@ -194,45 +194,70 @@ const handleOptimization = (optimization) => {
 // });
 const loadeds = (viewer) => {
   boxSelection = new BoxSelectionHelper(viewer);
-  // const groupId = cesiumContainer.value.createGroup({
-  //   id: 'cq-polygon-group',
-  //   zIndex: 1,
-  //   name: '重庆区域规划图',
-  // });
-  // cesiumContainer.value.createGeojson({
-  //   url: `/geojson/cq-map-data.json`,
-  //   options: {
-  //     layerId: 'district-chongqing', // 唯一 ID
-  //     name: '重庆区域地图',
-  //     groupId: groupId,
-  //     clampToGround: true,
-  //     stroke: '#fff', // 边框颜色
-  //     strokeWidth: 2, // 边框宽度
-  //     fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
-  //     polyline: {
-  //       width: 2,
-  //       material: '#ff0000',
-  //       clampToGround: true,
-  //     },
-  //   },
-  // });
-  // cesiumContainer.value.createGeojson({
-  //   url: `/geojson/track/cq_track_data_lines.geojson`,
-  //   options: {
-  //     layerId: 'chongqing-track-lines', // 唯一 ID
-  //     name: '轨道交通线路',
-  //     groupId: groupId,
-  //     clampToGround: true,
-  //     stroke: '#fff', // 边框颜色
-  //     strokeWidth: 2, // 边框宽度
-  //     fill: 'rgba(66, 8, 60, 0.5)', // 填充颜色（含透明度）
-  //     polyline: {
-  //       width: 2,
-  //       material: 'rgba(90, 30, 200, 0.5)',
-  //       clampToGround: true,
-  //     },
-  //   },
-  // });
+  const groupId = cesiumContainer.value.createGroup({
+    id: 'cq-polygon-group',
+    zIndex: 1,
+    name: '重庆区域规划图',
+  });
+  console.error('Viewer: ', viewer);
+  cesiumContainer.value.createGeojson({
+    url: `/geojson/cq-map-data.json`,
+    options: {
+      layerId: 'district-chongqing', // 唯一 ID
+      name: '重庆区域地图',
+      groupId: groupId,
+      clampToGround: true,
+      stroke: '#fff', // 边框颜色
+      strokeWidth: 2, // 边框宽度
+      fill: 'rgba(52, 36, 200, 0.5)', // 填充颜色（含透明度）
+      key: 'adcode',
+      polyline: {
+        width: 2,
+        material: '#ff0000',
+        clampToGround: true,
+      },
+      zIndex: 5,
+    },
+  });
+  cesiumContainer.value.createGeojson({
+    url: `/geojson/track/cq_track_data_lines.geojson`,
+    options: {
+      layerId: 'chongqing-track-lines', // 唯一 ID
+      name: '轨道交通线路',
+      groupId: groupId,
+      clampToGround: true,
+      stroke: 'rgba(66, 8, 60, 1)', // 边框颜色
+      strokeWidth: 2, // 边框宽度
+      fill: 'rgba(66, 8, 60, 1)', // 填充颜色（含透明度）
+      polyline: {
+        width: 2,
+        material: 'rgba(90, 30, 200, 0.5)',
+        clampToGround: true,
+      },
+      zIndex: 6,
+      key: 'LineName',
+    },
+  });
+
+  cesiumContainer.value.createGeojson({
+    url: `/geojson/track/cq_track_data_statiions.geojson`,
+    options: {
+      layerId: 'chongqing-track-stations', // 唯一 ID
+      name: '轨道交通站点',
+      groupId: groupId,
+      clampToGround: true,
+      stroke: 'rgba(66, 8, 60, 1)', // 边框颜色
+      strokeWidth: 2, // 边框宽度
+      fill: 'rgba(66, 8, 60, 1)', // 填充颜色（含透明度）
+      polyline: {
+        width: 2,
+        material: 'rgba(90, 30, 200, 0.5)',
+        clampToGround: true,
+      },
+      zIndex: 6,
+      key: 'LineName',
+    },
+  });
   // cesiumContainer.value.onListener(
   //   'click',
   //   'district-chongqing',
