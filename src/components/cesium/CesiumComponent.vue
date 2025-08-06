@@ -73,7 +73,7 @@ const props = defineProps({
   token: {
     type: String,
     default:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0N2YxOWQ0NC1mYTkyLTQzYTEtOWU0Ny1jOTQyOTE2ZDFlOTMiLCJpZCI6MjMyMTc3LCJpYXQiOjE3MjI4NDUxNzN9.UijwFTk4emxDLQHMXFaA2-36v3c1kKVV-EVs0OGO54o',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmY2QwZTgyYS0yOWFkLTQwM2QtYWYyOS0wYjY2YmQ5MDVhMTYiLCJpZCI6MjMyMTc3LCJpYXQiOjE3NDk3ODMzMzB9.N8GyH36fMLhOGsyzB8ez7UJicKgOxmDOMSBiSQO1zb0',
   },
 });
 // console.error(props.levelConfig);
