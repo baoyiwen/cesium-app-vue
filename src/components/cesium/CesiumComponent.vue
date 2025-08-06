@@ -210,6 +210,27 @@ const convertColor = (color) => {
   return Cesium.Color.WHITE; // 默认返回白色
 };
 
+function safeUnionV2(polygons) {
+  try {
+    return turf.union(...polygons);
+  } catch (e) {
+    console.warn('turf.union 合并失败:', e);
+    return null;
+  }
+}
+
+/**
+ * ✅ 获取当前实体应使用的 zIndex 偏移（用于模拟层级）
+ * - polygon 贴地时使用原生 polygon.zIndex
+ * - 其他类型统一用高度抬升实现
+ */
+function getZIndexOffset(type, clampToGround, zIndex) {
+  if (clampToGround) {
+    return type === 'polygon' ? null : 0;
+  }
+  return zIndex * 1.0;
+}
+
 // **初始化 Cesium Viewer**
 const initCesium = async () => {
   try {
@@ -217,6 +238,15 @@ const initCesium = async () => {
 
     // 异步加载全球地形
     let terrainProvider = null;
+    // 配置Cesium的Token
+    if (!props.token) {
+      console.error(
+        'Missing Cesium Token! Please provide a valid access token .'
+      );
+      return;
+    } else {
+      Cesium.Ion.defaultAccessToken = props.token;
+    }
     if (props.isOpenTerrain) {
       terrainProvider = await Cesium.createWorldTerrainAsync({
         /**
@@ -233,15 +263,7 @@ const initCesium = async () => {
       // });
     }
     window.terrain = terrainProvider;
-    // 配置Cesium的Token
-    if (!props.token) {
-      console.error(
-        'Missing Cesium Token! Please provide a valid access token .'
-      );
-      return;
-    } else {
-      Cesium.Ion.defaultAccessToken = props.token;
-    }
+
     // 初始化 Viewer
     viewer = new Cesium.Viewer(cesiumContainer.value, {
       terrainProvider,
@@ -629,15 +651,36 @@ const initCesium = async () => {
     // 性能监控
     monitorPerformance();
     window.map = viewer;
-
     emit('loaded', viewer); // 通知父组件 Viewer 加载完成
     initState();
 
     // const layerManager = new GeoLayerManager(viewer);
     window.layerStore = layerStore;
     window.layerManager = layerStore.manager;
-    // Cesium.GeoJsonDataSource(`/geojson/track/cq_track_data_lines.geojson`, {
+    // Cesium.GeoJsonDataSource.load(`/geojson/track/cq_track_data_lines.geojson`, {
     //   clampToGround: true,
+    //   // stroke: Cesium.Color.BLACK,
+    //   // strokeWidth: 4, // 加粗轮廓线
+    //   // outline: true, // 关键：启用轮廓线
+    //   // outlineColor: Cesium.Color.RED,
+    //   // outlineWidth: 2,
+    //   // fill: Cesium.Color.GREEN.withAlpha(0.4),
+    //   // 微抬多边形防止Z-fighting
+    //   // height: 100,
+    // }).then((res) => {
+    //   viewer.dataSources.add(res);
+    // });
+
+    //  Cesium.GeoJsonDataSource.load(`/geojson/track/cq_track_data_statiions.geojson`, {
+    //   clampToGround: true,
+    //   // stroke: Cesium.Color.BLACK,
+    //   // strokeWidth: 4, // 加粗轮廓线
+    //   // outline: true, // 关键：启用轮廓线
+    //   // outlineColor: Cesium.Color.RED,
+    //   // outlineWidth: 2,
+    //   // fill: Cesium.Color.GREEN.withAlpha(0.4),
+    //   // 微抬多边形防止Z-fighting
+    //   // height: 100,
     // }).then((res) => {
     //   viewer.dataSources.add(res);
     // });
@@ -669,6 +712,68 @@ const initCesium = async () => {
     console.error('Cesium initialization error:', error);
   }
 };
+
+/**
+ * ✅ polygon 类型绘制边界线（polyline）
+ */
+function generatePolygonBoundaryLines(dataSource, keyProp) {
+  const grouped = new Map();
+
+  dataSource.entities.values.forEach((entity) => {
+    if (!entity.polygon || !entity.properties) return;
+
+    const key =
+      entity.properties[keyProp]?.getValue(Cesium.JulianDate.now()) ??
+      entity.id;
+
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(entity);
+  });
+
+  grouped.forEach((entities) => {
+    const allPositions = [];
+
+    entities.forEach((entity) => {
+      const hierarchy = entity.polygon.hierarchy?.getValue(
+        Cesium.JulianDate.now()
+      );
+      if (hierarchy?.positions) {
+        allPositions.push(hierarchy.positions);
+      }
+    });
+
+    if (!props.showPolyline || allPositions.length === 0) return;
+
+    const mergedPositions = allPositions.flat();
+    const zOffset = getZIndexOffset(
+      'polyline',
+      props.clampToGround,
+      props.zIndex
+    );
+
+    const elevated = mergedPositions.map((p) => {
+      const carto = Cesium.Cartographic.fromCartesian(p);
+      return Cesium.Cartesian3.fromRadians(
+        carto.longitude,
+        carto.latitude,
+        zOffset
+      );
+    });
+
+    const polylineEntity = new Cesium.Entity({
+      polyline: {
+        positions: elevated,
+        width: props.polyline.width,
+        material: convertColor(props.polyline.material),
+        clampToGround: props.clampToGround,
+      },
+      layerId,
+      _geojsonTag: true,
+      _type: 'polyline',
+    });
+    addedEntities.polyline.push(polylineEntity);
+  });
+}
 
 /**
  *
@@ -711,9 +816,11 @@ const addGeoJson = (url, options = {}, callback) => {
       heightReference: 'CLAMP_TO_GROUND',
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
     },
+    zIndex: 1,
     showPolyline: true,
     showLabel: true,
     labelField: 'name',
+    key: 'id',
     groupId: null,
     name: layerId,
     ...options,
@@ -724,17 +831,18 @@ const addGeoJson = (url, options = {}, callback) => {
     polygon: [],
     label: [],
     polyline: [],
+    // unkown: [],
+    point: [],
   };
 
-  const processGroupedEntities = (dataSource) => {
+  const processGroupedEntities = (dataSource, keyProp) => {
     const grouped = new Map();
 
     dataSource.entities.values.forEach((entity) => {
       if (!entity.polygon || !entity.properties) return;
 
       const key =
-        entity.properties.adcode?.getValue(Cesium.JulianDate.now()) ??
-        entity.properties.name?.getValue(Cesium.JulianDate.now()) ??
+        entity.properties[keyProp]?.getValue(Cesium.JulianDate.now()) ??
         entity.id;
 
       if (!grouped.has(key)) grouped.set(key, []);
@@ -789,7 +897,7 @@ const addGeoJson = (url, options = {}, callback) => {
         return turf.polygon([coords]);
       });
 
-      const unionPolygon = safeUnion(turfPolygons);
+      const unionPolygon = safeUnionV2(turfPolygons);
       if (!unionPolygon) return;
 
       const point = turf.centerOfMass(unionPolygon);
@@ -830,22 +938,48 @@ const addGeoJson = (url, options = {}, callback) => {
 
   return Cesium.GeoJsonDataSource.load(url, {
     clampToGround: props.clampToGround,
-    stroke: Cesium.Color.TRANSPARENT,
+    stroke: convertColor(props.stroke),
     fill: convertColor(props.fill),
     strokeWidth: props.strokeWidth,
   })
     .then((dataSource) => {
-      viewer.dataSources.add(dataSource);
-
+      // viewer.dataSources.add(dataSource);
+      // dataSource.entities.values.forEach((em) => {
+      //   console.error(`${layerId} type: `, em.__type);
+      //   console.error(`${layerId} props: `, em.properties);
+      //   console.error(`${layerId} entity: `, em);
+      // });
       // polygon 直接收集
-      addedEntities.polygon = dataSource.entities.values.map((em) => {
-        em.__type = 'polygon';
-        em.layerId = layerId;
-        return em;
+      // 分类基础实体（polygon / polyline / point）
+      dataSource.entities.values.forEach((entity) => {
+        if (entity.polygon) {
+          entity.__type = 'polygon';
+          entity.layerId = layerId;
+          addedEntities.polygon.push(entity);
+        } else if (entity.polyline) {
+          entity.__type = 'polyline';
+          entity.layerId = layerId;
+          addedEntities.polyline.push(entity);
+        } else if (entity.position) {
+          entity.__type = 'point';
+          entity.layerId = layerId;
+
+          const carto = Cesium.Cartographic.fromCartesian(
+            entity.position.getValue(Cesium.JulianDate.now())
+          );
+          // entity.position = new Cesium.ConstantPositionProperty(
+          //   Cesium.Cartesian3.fromRadians(
+          //     carto.longitude,
+          //     carto.latitude,
+          //     heightOffset
+          //   )
+          // );
+          addedEntities.point.push(entity);
+        }
       });
 
       // 拾取 label 和 polyline
-      processGroupedEntities(dataSource);
+     // processGroupedEntities(dataSource, props.key);
 
       // 添加到 store（自动分类）
       store.addLayer({
