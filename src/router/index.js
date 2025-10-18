@@ -16,14 +16,26 @@ const routes = [
   },
   {
     path: '/showpage',
-    name: '测试页面',
+    name: 'Show Page',
     component: () => import('../page/test/index.vue'),
     meta: {
-      title: 'Show Page',
+      title: '测试页面',
       icon: '/images/menus/map-draw.svg',
       activeIcon: '/images/menus/map-draw-night.svg',
       showInMenu: true,
-      isDefault: true,
+      isDefault: false,
+    },
+  },
+  {
+    path: '/cesium-layout',
+    name: 'Cesium Page',
+    component: () => import('../page/cesiumPage.vue'),
+    meta: {
+      title: 'Cesium 页面',
+      icon: '/images/menus/map-draw.svg',
+      activeIcon: '/images/menus/map-draw-night.svg',
+      showInMenu: true,
+      isDefault: false,
     },
   },
   {
